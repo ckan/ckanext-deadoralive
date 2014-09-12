@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ckan/ckanext-deadoralive.png)](https://travis-ci.org/ckan/ckanext-deadoralive) [![Coverage Status](https://coveralls.io/repos/ckan/ckanext-deadoralive/badge.png?branch=master)](https://coveralls.io/r/ckan/ckanext-deadoralive?branch=master)
+[![Build Status](https://travis-ci.org/seanh/ckanext-deadoralive.png)](https://travis-ci.org/seanh/ckanext-deadoralive) [![Coverage Status](https://coveralls.io/repos/seanh/ckanext-deadoralive/badge.png?branch=master)](https://coveralls.io/r/seanh/ckanext-deadoralive?branch=master)
 
 ckanext-deadoralive
 ===================
