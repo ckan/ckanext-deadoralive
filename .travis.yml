@@ -7,3 +7,5 @@ install:
     - ./bin/travis-build.bash
     - pip install coveralls
 script: ./bin/travis-run.sh
+after_success:
+    - coveralls
