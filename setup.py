@@ -25,6 +25,6 @@ setup(
     entry_points='''
         [ckan.plugins]
         # Add plugins here, e.g.
-        # myplugin=ckanext.deadoralive.plugin:PluginClass
+        deadoralive=ckanext.deadoralive.plugin:DeadOrAlivePlugin
     ''',
 )
