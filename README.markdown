@@ -7,6 +7,26 @@ A dead links checker plugin for CKAN: checks your CKAN site's resource URLs
 for dead links.
 
 
+Installation
+------------
+
+
+Config Settings
+---------------
+
+In the `[app:main]` section of the CKAN config file:
+
+
+    # The minimum number of hours to wait before re-checking a resource
+    # (optional, default: 24).
+    ckanext.deadoralive.recheck_resources_after = 24
+
+    # The minimum number of hours to wait for a check result for a resource
+    # to come back before timing out and giving the resource out again to
+    # another link checker task (optional, default: 2).
+    ckanext.deadoralive.recheck_resources_after = 2
+
+
 Theory of Operation
 -------------------
 
