@@ -1,29 +1,15 @@
 """Model code for a database table that stores the results of link checks.
 
-A link checker result records the ID of the resource whose link was checked, the
-result of the check (the ``alive`` column, i.e. whether the link was found to be
-working or not) and the time.
+The database table stores one row for each CKAN resource ID containing the
+resource ID, the result and time of the resource's last link check, and some
+other info.
 
-There can be more than one result for the same resource, so we can tell how many
-times consecutively the resource's URL has been dead when we've checked, for how
-long it seems to have been dead, etc.
-
-The ``alive`` column may contain ``NULL`` / ``None``, this represents a
-"pending" resource check: we have given the resource's ID to a link checker task
-and are expecting to receive a link check result soon, but haven't received it
-yet.
-
-To prevent the database table from growing bigger and bigger over time, older
-results are automatically deleted as new results come in.
-
-This module contains some simple public functions for saving link checker
-results and for getting link checker results. Other modules should use these and
-should not access the link checker results database table or ORM objects
-directly.
+This module contains some simple public functions for saving and getting
+results. Other modules should use these and should not access the results
+database table or ORM objects directly.
 
 """
 import datetime
-import uuid
 
 import sqlalchemy
 import sqlalchemy.types as types
@@ -33,7 +19,7 @@ import ckan.model
 import ckan.model.meta
 
 
-def create_link_checker_results_table():
+def create_database_table():
     """Create the link_checker_results database table.
 
     If it doesn't already exist.
@@ -45,12 +31,11 @@ def create_link_checker_results_table():
         _link_checker_results_table.create()
 
 
-def save_link_checker_result(resource_id, alive, datetime_=None,
-                             timeout=None):
-    """Save a new link checker result in the database.
+def upsert(resource_id, alive, last_checked=None):
+    """Insert a new result or update the existing result for a resource.
 
-    This function also deletes old link checker results from the database so
-    that the table doesn't just keep growing indefinitely.
+    The ``last_checked`` param is for testing and shouldn't need to be used in
+    production.
 
     :param resource_id: the id of the resource that was checked
     :type resource_id: string
@@ -58,81 +43,82 @@ def save_link_checker_result(resource_id, alive, datetime_=None,
     :param alive: whether the resource's URL was found to be alive or not
     :type alive: bool
 
-    :param datetime_: the datetime at which the check was made (optional,
-        defaults to the current time) you shouldn't need to use this parameter,
-        it exists for testing purposes
-    :type datetime: datetime.datetime
-
-    :param timeout: the time delta beyond which old results will be deleted
-        (optional, default: one week)
-    :type timeout: datetime.timedelta
-
     """
-    # TODO: Make this timeout configurable in the config file.
-    if timeout is None:
-        timeout = datetime.timedelta(weeks=1)
-
-    # Delete any results older than the timeout.
-    q = ckan.model.Session.query(_LinkCheckerResult)
-    q = q.filter(
-        _LinkCheckerResult.datetime < datetime.datetime.utcnow() - timeout)
-    for result in q:
-        ckan.model.Session.delete(result)
-
-    # Now create the new link checker result.
-    r = _LinkCheckerResult(resource_id, alive, datetime_=datetime_)
-    ckan.model.Session.add(r)
+    now = _now()
+    try:
+        result = _get(resource_id)
+        result.alive = alive
+        if alive:
+            result.last_successful = now
+            result.num_fails = 0
+        else:
+            result.num_fails += 1
+        result.pending = False
+        result.pending_since = None
+    except NoResultForResourceError:
+        result = _LinkCheckerResult(resource_id, alive)
+        ckan.model.Session.add(result)
+    result.last_checked = last_checked or now
     ckan.model.Session.commit()
 
 
-def get_link_checker_results(resource_id):
-    """Return all the link checker results for the given resource.
+class NoResultForResourceError(Exception):
+    pass
 
-    Returns both pending and non-pending results.
 
-    Results are sorted most recent first.
+def _get(resource_id):
+    q = ckan.model.Session.query(_LinkCheckerResult)
+    q = q.filter_by(resource_id=resource_id)
+    try:
+        result = q.one()
+    except sqlalchemy.orm.exc.NoResultFound:
+        raise NoResultForResourceError
+    return result
+
+
+def get(resource_id):
+    """Return the result for the given resource ID.
 
     :param resource_id: the id of the resource whose results should be returned
     :type resource_id: string
 
-    :rtype: list of dicts
+    :rtype: dict
+
+    :raises NoResultForResourceError: if there's no result for the given
+        resource ID
 
     """
-    q = ckan.model.Session.query(_LinkCheckerResult)
-    q = q.filter_by(resource_id=resource_id)
-    q = q.order_by(_LinkCheckerResult.datetime.asc())
-    return [result.as_dict() for result in q]
+    return _get(resource_id).as_dict()
 
 
 # FIXME: What about resources belonging to private datasets?
 def get_resources_to_check(n, since=None, pending_since=None):
     """Return up to ``n`` resources to be checked for dead or alive links.
 
-    This function has side effects! Pending resource check results will be added
-    to the database for each of the resources returned. This records that we've
-    given these resources to a link checker task and are expecting to receive a
-    link check result for them soon.
+    This function has side effects! Pending results will be added to the
+    database for each of the resources returned. This records that we've given
+    these resources to a link checker and are expecting to receive results for
+    them soon. Resources with pending results won't be given out to another link
+    checker again for a while.
 
-    Resources that don't have any check results in the database will be returned
-    first (sorted with the oldest resources first).
+    Resources that don't have any results in the database will be returned first
+    (sorted with the oldest resources first).
 
-    If there are less than ``n`` resources that have no check results, then we
-    start re-checking resources that have previously been checked.  Resources
-    that do not have any check results (neither completed nor pending) within
-    the ``since`` time delta will be returned, sorted with the
-    most-recently-checked resources last.
+    If there are less than ``n`` resources that have no results, then we start
+    re-checking resources that have previously been checked.  Resources that
+    don't have any results (neither completed nor pending) within the ``since``
+    time delta will be returned, sorted with the most-recently-checked resources
+    last.
 
-    Resources that have completed check results from less than ``since`` ago
-    will never be returned.
+    Resources that have completed results from less than ``since`` ago will
+    never be returned.
 
     If there are still less than ``n`` resources, then we start re-checking
-    resources that have pending checks that we haven't received the results of
-    yet. Resources that do not have a completed check within ``since`` and do
-    not have a pending check within ``pending_since`` (but may have a pending
-    check within ``since``) will be returned. These will be sorted
-    oldest-pending-check first.
+    resources that have pending results that we haven't received yet.  Resources
+    that have a pending result from longer than ``pending_since`` ago will be
+    returned. These will be sorted oldest-pending-check first.
 
-    Resources that have a pending check from less than ``pending_since`` ago
+    Resources that have a pending result from less than ``pending_since`` ago
     will never be returned.
 
     If that still makes less than ``n`` resources then less than ``n``
@@ -141,11 +127,11 @@ def get_resources_to_check(n, since=None, pending_since=None):
     :param n: the maximum number of resources to return
     :type n: int
 
-    :param since: resources that have a completed check within this time delta
+    :param since: resources that have a completed result within this time delta
         will not be returned (optional, default: 24 hours)
     :type since: datetime.timedelta
 
-    :param pending_since: resources that have a pending check within this time
+    :param pending_since: resources that have a pending result within this time
         delta will not be returned (optional, default: 2 hours)
     :type pending_since: datetime.timedelta
 
@@ -159,8 +145,8 @@ def get_resources_to_check(n, since=None, pending_since=None):
     if pending_since is None:
         pending_since = datetime.timedelta(hours=2)
 
-    # Get the IDs of all the resources that have no check results,
-    # oldest resources first.
+    # Get the IDs of all the resources that have no results, oldest resources
+    # first.
     resources_with_link_checks = ckan.model.Session.query(
         _LinkCheckerResult.resource_id)
     q = ckan.model.Session.query(ckan.model.Resource.id)
@@ -169,84 +155,62 @@ def get_resources_to_check(n, since=None, pending_since=None):
     resources_to_check = [row[0] for row in q]
 
     if len(resources_to_check) >= n:
-        return _create_pending_resource_checks(resources_to_check[:n])
-
-    # Get the IDs of all the resources that do have resource checks, but not
-    # within ``since`` time ago.
-    since_time_ago = datetime.datetime.utcnow() - since
-    do_have_resource_checks_within_since = ckan.model.Session.query(
-        _LinkCheckerResult.resource_id).filter(
-            _LinkCheckerResult.datetime > since_time_ago)
-    q = ckan.model.Session.query(_LinkCheckerResult.resource_id)
-    q = q.order_by(_LinkCheckerResult.datetime.asc())
-    q = q.filter(~_LinkCheckerResult.resource_id.in_(
-        do_have_resource_checks_within_since))
-    resources_to_check.extend([row[0] for row in q])
-    for row in q:
-        resource_id = row[0]
-        if resource_id not in resources_to_check:
-            resources_to_check.append(resource_id)
-
-    if len(resources_to_check) >= n:
-        return _create_pending_resource_checks(resources_to_check[:n])
+        return _make_pending(resources_to_check[:n])
 
     # Get the IDs of all the resources that:
-    # - Do have link checker results in the db
-    # - Do not have any completed results within ``since``
-    # - Do not have any pending results within ``pending_since``
-    checked_recently = ckan.model.Session.query(
-        _LinkCheckerResult.resource_id)
-    checked_recently = checked_recently.filter(
-        _LinkCheckerResult.alive.in_([True, False]))
-    checked_recently = checked_recently.filter(
-            _LinkCheckerResult.datetime > since_time_ago)
-    recent_pending_check = ckan.model.Session.query(
-        _LinkCheckerResult.resource_id)
-    recent_pending_check = recent_pending_check.filter_by(
-        alive=None)
-    pending_time_ago = datetime.datetime.utcnow() - pending_since
-    recent_pending_check = recent_pending_check.filter(
-        _LinkCheckerResult.datetime > pending_time_ago)
+    # - Do have results
+    # - Do not have any pending results
+    # - The last result is from > ``since`` ago.
+    since_time_ago = _now() - since
     q = ckan.model.Session.query(_LinkCheckerResult.resource_id)
-    q = q.order_by(_LinkCheckerResult.datetime.asc())
-    q = q.filter(~_LinkCheckerResult.resource_id.in_(checked_recently))
-    q = q.filter(~_LinkCheckerResult.resource_id.in_(recent_pending_check))
-    for row in q:
-        resource_id = row[0]
-        if resource_id not in resources_to_check:
-            resources_to_check.append(resource_id)
+    q = q.filter_by(pending=False)
+    q = q.filter(_LinkCheckerResult.last_checked < since_time_ago)
+    q = q.order_by(_LinkCheckerResult.last_checked.asc())
+    resources_to_check.extend([row[0] for row in q])
 
-    return _create_pending_resource_checks(resources_to_check[:n])
+    if len(resources_to_check) >= n:
+        return _make_pending(resources_to_check[:n])
+
+    # Get the IDs of all the resources that have a pending result from >
+    # ``pending_since`` ago.
+    pending_time_ago = _now() - pending_since
+    q = ckan.model.Session.query(_LinkCheckerResult.resource_id)
+    q = q.filter_by(pending=True)
+    q = q.filter(_LinkCheckerResult.pending_since < pending_time_ago)
+    q = q.order_by(_LinkCheckerResult.pending_since.asc())
+    resources_to_check.extend([row[0] for row in q])
+
+    return _make_pending(resources_to_check[:n])
 
 
-def _create_pending_resource_checks(resource_ids):
-    """Create pending resource check results for each of the given resources.
+def _now():
+    return datetime.datetime.utcnow()
 
-    :param resource_ids: the list of resource IDs to create pending checks for
-    :type resource_ids: list of strings
 
-    :returns: the list of resource IDs that it was given, unchanged
-    :rtype: list of strings
-
-    """
+def _make_pending(resource_ids, pending_since=None):
+    """Make the results for the given resource IDs as pending."""
+    now = _now()
     for resource_id in resource_ids:
-        r = _LinkCheckerResult(resource_id, None)
-        ckan.model.Session.add(r)
+        try:
+            result = _get(resource_id)
+        except NoResultForResourceError:
+            result = _LinkCheckerResult(resource_id, None, pending=True)
+            ckan.model.Session.add(result)
+        result.pending = True
+        result.pending_since = pending_since or now
     ckan.model.Session.commit()
     return resource_ids
 
 
-def _make_uuid():
-    return unicode(uuid.uuid4())
-
-
 _link_checker_results_table = sqlalchemy.Table(
     'link_checker_results', ckan.model.meta.metadata,
-    sqlalchemy.Column('id', types.UnicodeText, primary_key=True,
-                      default=_make_uuid),
-    sqlalchemy.Column('resource_id', types.UnicodeText, nullable=False),
+    sqlalchemy.Column('resource_id', types.UnicodeText, primary_key=True),
     sqlalchemy.Column('alive', types.Boolean, nullable=True),
-    sqlalchemy.Column('datetime', types.DateTime, nullable=False)
+    sqlalchemy.Column('last_checked', types.DateTime, nullable=True),
+    sqlalchemy.Column('last_successful', types.DateTime, nullable=True),
+    sqlalchemy.Column('num_fails', types.INT, nullable=False),
+    sqlalchemy.Column('pending', types.Boolean, nullable=False),
+    sqlalchemy.Column('pending_since', types.DateTime, nullable=True),
 )
 
 
@@ -257,18 +221,34 @@ class _LinkCheckerResult(object):
     This is a private class - other modules shouldn't use it.
 
     """
-    def __init__(self, resource_id, alive, datetime_=None):
-        if datetime_ is None:
-            datetime_ = datetime.datetime.utcnow()
-        self.datetime = datetime_
+    def __init__(self, resource_id, alive, pending=False):
         self.resource_id = resource_id
         self.alive = alive
+        now = _now()
+        self.last_checked = now
+        if alive:
+            self.last_successful = now
+            self.num_fails = 0
+        else:
+            self.last_successful = None
+            self.num_fails = 1
+        self.pending = pending
+        if pending:
+            self.pending_since = now
+        else:
+            self.pending_since = None
 
     def as_dict(self):
         """Return a dictionary representation of this link checker result."""
-        return dict(id=self.id, datetime=self.datetime,
-                    resource_id=self.resource_id,
-                    alive=self.alive)
+        return dict(
+            resource_id=self.resource_id,
+            alive=self.alive,
+            last_checked=self.last_checked,
+            last_successful=self.last_successful,
+            num_fails=self.num_fails,
+            pending=self.pending,
+            pending_since=self.pending_since,
+        )
 
 
 ckan.model.meta.mapper(_LinkCheckerResult, _link_checker_results_table)
