@@ -80,7 +80,16 @@ def get(context, data_dict):
     # TODO: Authorization.
     # TODO: Validation.
     resource_id = data_dict["resource_id"]
-    return results.get(resource_id)
+    result = results.get(resource_id)
+
+    # datetimes aren't JSON serializable.
+    result["last_checked"] = result["last_checked"].isoformat()
+    if result["last_successful"]:
+        result["last_successful"] = result["last_successful"].isoformat()
+    if result["pending_since"]:
+        result["pending_since"] = result["pending_since"].isoformat()
+
+    return result
 
 
 class DeadOrAlivePlugin(plugins.SingletonPlugin):

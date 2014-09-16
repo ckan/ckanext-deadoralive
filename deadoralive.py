@@ -29,7 +29,7 @@ def get_resources_to_check(client_site_url, apikey):
     import ckanapi
     ckan = ckanapi.RemoteCKAN(client_site_url, apikey=apikey)
     # TODO: Handle exceptions and unexpected results.
-    response = ckan.action.dead_or_alive_get_resources_to_check()
+    response = ckan.action.ckanext_deadoralive_get_resources_to_check()
     return response
 
 
@@ -53,7 +53,7 @@ def get_url_for_id(client_site_url, apikey, resource_id):
     import ckanapi
     ckan = ckanapi.RemoteCKAN(client_site_url, apikey=apikey)
     try:
-        response = ckan.action.resource_show(resource_id)
+        response = ckan.action.resource_show(id=resource_id)
     except ckanapi.NotAuthorized:
         raise CouldNotGetURLError
     # TODO: Handle invalid responses from the client site.
