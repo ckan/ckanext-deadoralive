@@ -91,7 +91,7 @@ def check_url(url):
     except requests.exceptions.RequestException as err:
         result["alive"] = False
         if "reason" not in result:
-            result["reason"] = err
+            result["reason"] = str(err)
         if "status" not in result:
             # This can happen if the response is invalid HTTP, if we get a DNS
             # failure, or a timeout, etc.
