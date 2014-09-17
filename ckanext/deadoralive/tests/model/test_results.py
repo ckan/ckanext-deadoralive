@@ -12,8 +12,8 @@ import ckanext.deadoralive.tests.factories as factories
 class TestUpsertAndGet(object):
     """Tests for the upsert() and get() functions."""
     def setup(self):
-        helpers.reset_db()
         results.create_database_table()
+        helpers.reset_db()
 
     def test_insert_successful_result(self):
         """Test checking a resource for the first time when the link is working.
@@ -199,8 +199,8 @@ class TestGetResourcesToCheck(object):
     """Tests for the get_resources_to_check() function."""
 
     def setup(self):
-        helpers.reset_db()
         results.create_database_table()
+        helpers.reset_db()
 
     def test_with_5_new_resources_and_request_10(self):
         """

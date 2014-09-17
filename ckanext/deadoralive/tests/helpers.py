@@ -4,6 +4,8 @@ import ckan.config.middleware
 import pylons.config as config
 import webtest
 
+import ckanext.deadoralive.model.results as results
+
 
 def _get_test_app():
     '''Return a webtest.TestApp for CKAN, with legacy templates disabled.
@@ -59,6 +61,7 @@ class FunctionalTestBaseClass():
         import ckan.model as model
         model.Session.close_all()
         model.repo.rebuild_db()
+        results.create_database_table()
 
     @classmethod
     def teardown_class(cls):
