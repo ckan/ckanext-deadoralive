@@ -9,6 +9,7 @@ README.markdown. For example, a CKAN site with the ckanext-deadoralive extension
 installed will do.
 
 """
+import sys
 import argparse
 import logging
 
@@ -198,11 +199,11 @@ def get_check_and_report(client_site_url, apikey, get_resource_ids_to_check,
                       result=result)
 
 
-def main(n=50):
+def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--url")
     parser.add_argument("--apikey")
-    parsed_args = parser.parse_args()
+    parsed_args = parser.parse_args(args)
     client_site_url = parsed_args.url
     apikey = parsed_args.apikey
 
@@ -211,4 +212,4 @@ def main(n=50):
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
