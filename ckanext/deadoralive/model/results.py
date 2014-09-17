@@ -48,10 +48,11 @@ def upsert(resource_id, alive, last_checked=None):
     try:
         result = _get(resource_id)
         result.alive = alive
-        if alive:
+        assert alive in (True, False)
+        if alive is True:
             result.last_successful = now
             result.num_fails = 0
-        else:
+        elif alive is False:
             result.num_fails += 1
         result.pending = False
         result.pending_since = None
@@ -225,13 +226,19 @@ class _LinkCheckerResult(object):
         self.resource_id = resource_id
         self.alive = alive
         now = _now()
-        self.last_checked = now
-        if alive:
+        assert alive in (True, False, None)
+        if alive is True:
+            self.last_checked = now
             self.last_successful = now
             self.num_fails = 0
-        else:
+        elif alive is False:
+            self.last_checked = now
             self.last_successful = None
             self.num_fails = 1
+        elif alive is None:
+            self.last_checked = None
+            self.last_successful = None
+            self.num_fails = 0
         self.pending = pending
         if pending:
             self.pending_since = now

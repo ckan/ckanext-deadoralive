@@ -147,6 +147,53 @@ class TestUpsertAndGet(object):
         nose.tools.assert_raises(results.NoResultForResourceError,
                                  results.get, "test_resource_id")
 
+    def test_pending_result_does_not_change_num_fails(self):
+        """Inserting a new pending result should not change num_fails.
+
+        If we already have a results row for a resource, then we change that row
+        to make a pending result, this should not change num_fails or other
+        fields.
+
+        """
+        # Make a resource with 1 success then 3 consecutive fails.
+        results.upsert("test_resource_id", True)
+        last_successful = results.get("test_resource_id")["last_successful"]
+        results.upsert("test_resource_id", False)
+        results.upsert("test_resource_id", False)
+        results.upsert("test_resource_id", False)
+        num_fails = results.get("test_resource_id")["num_fails"]
+        last_checked = results.get("test_resource_id")["last_checked"]
+
+        before = datetime.datetime.utcnow()
+        results._make_pending(["test_resource_id"])
+        after = datetime.datetime.utcnow()
+
+        result = results.get("test_resource_id")
+        assert result["num_fails"] == num_fails
+        assert result["last_successful"] == last_successful
+        assert result["last_checked"] == last_checked
+        assert result["alive"] is False
+        assert result["pending"] is True
+        assert result["pending_since"] > before
+        assert result["pending_since"] < after
+
+    def test_initial_pending_result(self):
+        """Test creating a pending result for a resource that has no results.
+
+        """
+        before = datetime.datetime.utcnow()
+        results._make_pending(["test_resource_id"])
+        after = datetime.datetime.utcnow()
+
+        result = results.get("test_resource_id")
+        assert result["num_fails"] == 0
+        assert result["last_successful"] is None
+        assert result["last_checked"] is None
+        assert result["alive"] is None
+        assert result["pending"] is True
+        assert result["pending_since"] > before
+        assert result["pending_since"] < after
+
 
 class TestGetResourcesToCheck(object):
     """Tests for the get_resources_to_check() function."""
