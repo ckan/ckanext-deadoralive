@@ -69,7 +69,7 @@ def main(n=200):
             # though it isn't used - otherwise CKAN has a validation error.
             resource = ckan.action.resource_create(
                 package_id="test_dataset",
-                url="foobar",
+                url=None,
                 upload=open("test_data_file.txt"),
             )
             logger.info("Created test resource {0} by uploading file.".format(
