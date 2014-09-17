@@ -1,7 +1,7 @@
-import ckan.new_tests.factories as factories
 import ckan.new_tests.helpers as helpers
 
 import ckanext.deadoralive.tests.helpers as custom_helpers
+import ckanext.deadoralive.tests.factories as factories
 
 
 class TestGetResourcesToCheck(custom_helpers.FunctionalTestBaseClass):

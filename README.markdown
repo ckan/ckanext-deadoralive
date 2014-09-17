@@ -41,6 +41,10 @@ It's a CKAN extension plus a link checker cron job.
 Running the Tests
 -----------------
 
+Note that you should have the `release-v2.2` branch of CKAN checked out when
+you run these tests. The `ckanext-deadoralive` `master` branch is currently
+tested against CKAN's `release-v2.2` branch on Travis.
+
 From the `ckanext-deadoralive` directory run:
 
     nosetests --nologcapture --with-pylons=test.ini

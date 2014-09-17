@@ -4,9 +4,9 @@ import datetime
 import nose.tools
 
 import ckan.new_tests.helpers as helpers
-import ckan.new_tests.factories as factories
 
 import ckanext.deadoralive.model.results as results
+import ckanext.deadoralive.tests.factories as factories
 
 
 class TestUpsertAndGet(object):
