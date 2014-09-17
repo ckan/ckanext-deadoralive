@@ -6,6 +6,11 @@ ckanext-deadoralive
 A dead links checker plugin for CKAN: checks your CKAN site's resource URLs
 for dead links.
 
+Requirements
+------------
+
+Tested with CKAN 2.2 and Python 2.7. Python 2.6 is not supported!
+
 
 Installation
 ------------
