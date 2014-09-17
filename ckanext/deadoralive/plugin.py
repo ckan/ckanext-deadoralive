@@ -6,26 +6,7 @@ import ckan.plugins.toolkit as toolkit
 import ckanext.deadoralive.model.results as results
 import ckanext.deadoralive.config as config
 import ckanext.deadoralive.logic.action.get as get
-
-
-# Action functions provided by this plugin.
-
-def upsert(context, data_dict):
-    """Save a link check result for a resource.
-
-    :param resource_id: the id of the resource that was checked
-    :type resource_id: string
-
-    :param alive: whether or not the link was found to be alive
-    :type alive: bool
-
-    """
-    # TODO: Authorization.
-    # TODO: Validation.
-    resource_id = data_dict["resource_id"]
-    alive = data_dict["alive"]
-
-    results.upsert(resource_id, alive)
+import ckanext.deadoralive.logic.action.update as update
 
 
 class DeadOrAlivePlugin(plugins.SingletonPlugin):
@@ -53,6 +34,6 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
         return {
             "ckanext_deadoralive_get_resources_to_check":
                 get.get_resources_to_check,
-            "ckanext_deadoralive_upsert": upsert,
+            "ckanext_deadoralive_upsert": update.upsert,
             "ckanext_deadoralive_get": get.get,
         }
