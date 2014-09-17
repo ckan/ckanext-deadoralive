@@ -26,7 +26,7 @@ cd -
 
 echo "Installing ckanext-deadoralive and its requirements..."
 python setup.py develop
-#pip install -r dev-requirements.txt
+pip install -r requirements.txt
 
 echo "Moving test.ini into a subdir..."
 mkdir subdir
