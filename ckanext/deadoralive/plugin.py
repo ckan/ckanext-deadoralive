@@ -5,6 +5,7 @@ import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 
 import ckanext.deadoralive.model.results as results
+import ckanext.deadoralive.config as config
 
 
 # Action functions provided by this plugin.
@@ -36,10 +37,10 @@ def get_resources_to_check(context, data_dict):
     # TODO: Authorization.
     # TODO: Validation.
 
-    recheck_resources_after = DeadOrAlivePlugin.recheck_resources_after
+    recheck_resources_after = config.recheck_resources_after
     since_delta = datetime.timedelta(hours=recheck_resources_after)
     resend_pending_resources_after = (
-        DeadOrAlivePlugin.resend_pending_resources_after)
+        config.resend_pending_resources_after)
     pending_since_delta = datetime.timedelta(
         hours=resend_pending_resources_after)
 
@@ -96,26 +97,20 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.IConfigurable)
 
-    # Default values for the plugin's config settings.
-    # The config settings are saved as class attributes so that the action
-    # functions above can access them without having to instantiate the class.
-    recheck_resources_after = 24
-    resend_pending_resources_after = 2
-
     # IConfigurable
 
-    def configure(self, config):
+    def configure(self, config_):
         results.create_database_table()
 
         # Update the class variables for the config settings with the values
         # from the config file, *if* they're in the config file.
-        self.__class__.recheck_resources_after = toolkit.asint(config.get(
+        config.recheck_resources_after = toolkit.asint(config_.get(
             "ckanext.deadoralive.recheck_resources_after",
-            self.__class__.recheck_resources_after))
-        self.__class__.resend_pending_resources_after = toolkit.asint(
-            config.get(
+            config.recheck_resources_after))
+        config.resend_pending_resources_after = toolkit.asint(
+            config_.get(
                 "ckanext.deadoralive.resend_pending_resources_after",
-                self.__class__.resend_pending_resources_after))
+                config.resend_pending_resources_after))
 
     # IActions
 
