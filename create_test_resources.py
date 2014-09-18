@@ -22,7 +22,7 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
-def main(n=200):
+def main(n=50):
     parser = argparse.ArgumentParser()
     parser.add_argument("--url")
     parser.add_argument("--apikey")
