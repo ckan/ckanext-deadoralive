@@ -14,3 +14,5 @@ Other than that these variables shouldn't be assigned to - read-only!
 """
 recheck_resources_after = 24
 resend_pending_resources_after = 2
+broken_resource_min_fails = 3
+broken_resource_min_hours = 36

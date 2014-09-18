@@ -31,6 +31,14 @@ In the `[app:main]` section of the CKAN config file:
     # another link checker task (optional, default: 2).
     ckanext.deadoralive.recheck_resources_after = 2
 
+    # The minimum number of times that checking a resource's link must fail
+    # consecutively before we mark that resource as broken in CKAN.
+    ckanext.deadoralive.broken_resource_min_fails = 3
+
+    # The minimum number of hours that a resource's link must be broken for
+    # before we mark that resource as broken in CKAN.
+    ckanext.deadoralive.broken_resource_min_hours = 36
+
 
 Theory of Operation
 -------------------

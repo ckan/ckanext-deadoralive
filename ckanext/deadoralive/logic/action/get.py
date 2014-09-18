@@ -71,4 +71,33 @@ def get(context, data_dict):
     if result["pending_since"]:
         result["pending_since"] = result["pending_since"].isoformat()
 
+    # Add "broken" to the result - whether or not we consider the link to be
+    # broken according to our "it must have been dead for at least N consecutive
+    # checks over a period of at least M hours" test.
+    n = config.broken_resource_min_fails
+    m = config.broken_resource_min_hours
+    m_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(hours=m)
+
+    # Innocent until proven guilty.
+    result["broken"] = False
+
+    if result["last_successful"]:
+        last_successful = datetime.datetime.strptime(result["last_successful"],
+                                                     "%Y-%m-%dT%H:%M:%S.%f")
+    else:
+        last_successful = None
+
+    # We won't mark a link as "working" if it has never been checked
+    # successfully. It may not pass our test to be marked as broken if it hasn't
+    # been checked n times, but we will leave it unmarked rather than mark it
+    # as working.
+    if not result["last_successful"]:
+        result["broken"] = None
+
+    # Mark the resource as broken if it has at least n consecutive fails over
+    # a period of at least m hours.
+    if result["num_fails"] >= n:
+        if last_successful is None or last_successful < m_hours_ago:
+            result["broken"] = True
+
     return result

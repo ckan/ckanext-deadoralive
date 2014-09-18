@@ -30,6 +30,14 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
             config_.get(
                 "ckanext.deadoralive.resend_pending_resources_after",
                 config.resend_pending_resources_after))
+        config.broken_resource_min_fails = toolkit.asint(
+            config_.get(
+                "ckanext.deadoralive.broken_resource_min_fails",
+                config.broken_resource_min_fails))
+        config.broken_resource_min_hours = toolkit.asint(
+            config_.get(
+                "ckanext.deadoralive.broken_resource_min_hours",
+                config.broken_resource_min_hours))
 
     # IConfigurer
 

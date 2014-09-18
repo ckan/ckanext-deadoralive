@@ -5,22 +5,17 @@
   {% set link_checker_result = h.ckanext_deadoralive_get(c.resource.id) %}
   {# Important! Don't show results if link_checker_result.alive is None,
      that just means we have a pending result but not an actual result yet. #}
-  {% if link_checker_result and link_checker_result.alive != None %}
+  {% if link_checker_result and link_checker_result.broken != None %}
     <section class="module module-narrow module-shallow">
       <div class="module-content">
         <h2>
-          {% if link_checker_result.alive %}
-            (tick) This resource link is working
-          {% else %}
+          {% if link_checker_result.broken %}
             (!) This resource link is broken
+          {% else %}
+            (tick) This resource link is working
           {% endif %}
         </h2>
-        {% if link_checker_result.alive %}
-          <p>
-            This resource link was working when we last checked it on
-            {{ h.render_datetime(link_checker_result.last_successful) }}.
-          </p>
-        {% else %}
+        {% if link_checker_result.broken %}
           <p>
             This resource link was broken when we last checked it on
             {{ h.render_datetime(link_checker_result.last_checked) }}:
@@ -44,6 +39,11 @@
               </li>
             {% endif %}
           </ul>
+        {% else %}
+          <p>
+            This resource link was working when we last checked it on
+            {{ h.render_datetime(link_checker_result.last_successful) }}.
+          </p>
         {% endif %}
       </div>
     </section>
