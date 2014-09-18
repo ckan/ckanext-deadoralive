@@ -143,6 +143,8 @@ class TestIntegration(custom_helpers.FunctionalTestBaseClass):
             assert result["num_fails"] == 0
             assert result["pending"] is False
             assert result["pending_since"] is None
+            assert result["status"] == 200
+            assert result["reason"] == "OK"
 
         # Now check the expected result for the resource with a broken link.
         result = helpers.call_action("ckanext_deadoralive_get",
@@ -157,19 +159,5 @@ class TestIntegration(custom_helpers.FunctionalTestBaseClass):
         assert result["num_fails"] == 1
         assert result["pending"] is False
         assert result["pending_since"] is None
-
-        result = helpers.call_action("ckanext_deadoralive_get",
-                                     resource_id=resource_3["id"])
-        assert result["resource_id"] == resource_3["id"]
-        assert result["alive"] is True
-        last_checked = datetime.datetime.strptime(result["last_checked"],
-                                                  "%Y-%m-%dT%H:%M:%S.%f")
-        assert last_checked > before
-        assert last_checked < after
-        last_successful = datetime.datetime.strptime(result["last_successful"],
-                                                     "%Y-%m-%dT%H:%M:%S.%f")
-        assert last_successful > before
-        assert last_successful < after
-        assert result["num_fails"] == 0
-        assert result["pending"] is False
-        assert result["pending_since"] is None
+        assert result["status"] == 500
+        assert result["reason"] == "Internal Server Error"

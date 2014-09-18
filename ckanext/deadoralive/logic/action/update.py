@@ -15,5 +15,7 @@ def upsert(context, data_dict):
     # TODO: Validation.
     resource_id = data_dict["resource_id"]
     alive = data_dict["alive"]
+    status = data_dict.get("status")
+    reason = data_dict.get("reason")
 
-    results.upsert(resource_id, alive)
+    results.upsert(resource_id, alive, status=status, reason=reason)

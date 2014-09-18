@@ -13,10 +13,13 @@ class TestUpsert(custom_helpers.FunctionalTestBaseClass):
         resource = factories.Resource()
 
         helpers.call_action("ckanext_deadoralive_upsert",
-                            resource_id=resource["id"], alive=True)
+                            resource_id=resource["id"], alive=True,
+                            status=200, reason="OK")
 
         result = helpers.call_action("ckanext_deadoralive_get",
                                      resource_id=resource["id"])
 
         assert result["resource_id"] == resource["id"]
         assert result["alive"] is True
+        assert result["status"] == 200
+        assert result["reason"] == "OK"

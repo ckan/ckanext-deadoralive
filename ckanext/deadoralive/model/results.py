@@ -31,7 +31,7 @@ def create_database_table():
         _link_checker_results_table.create()
 
 
-def upsert(resource_id, alive, last_checked=None):
+def upsert(resource_id, alive, status=None, reason=None, last_checked=None):
     """Insert a new result or update the existing result for a resource.
 
     The ``last_checked`` param is for testing and shouldn't need to be used in
@@ -42,6 +42,14 @@ def upsert(resource_id, alive, last_checked=None):
 
     :param alive: whether the resource's URL was found to be alive or not
     :type alive: bool
+
+    :param status: the HTTP status code returned when requesting the URL,
+        or None
+    :type status: int or None
+
+    :param reason: the reason for the successful or failed link check
+        (e.g. "OK". "Not Found" or "Internal Server Error") or None
+    :type reason: string or None
 
     """
     now = _now()
@@ -56,8 +64,11 @@ def upsert(resource_id, alive, last_checked=None):
             result.num_fails += 1
         result.pending = False
         result.pending_since = None
+        result.status = status
+        result.reason = reason
     except NoResultForResourceError:
-        result = _LinkCheckerResult(resource_id, alive)
+        result = _LinkCheckerResult(resource_id, alive, status=status,
+                                    reason=reason)
         ckan.model.Session.add(result)
     result.last_checked = last_checked or now
     ckan.model.Session.commit()
@@ -212,6 +223,8 @@ _link_checker_results_table = sqlalchemy.Table(
     sqlalchemy.Column('num_fails', types.INT, nullable=False),
     sqlalchemy.Column('pending', types.Boolean, nullable=False),
     sqlalchemy.Column('pending_since', types.DateTime, nullable=True),
+    sqlalchemy.Column('status', types.Integer, nullable=True),
+    sqlalchemy.Column('reason', types.UnicodeText, nullable=True),
 )
 
 
@@ -222,9 +235,12 @@ class _LinkCheckerResult(object):
     This is a private class - other modules shouldn't use it.
 
     """
-    def __init__(self, resource_id, alive, pending=False):
+    def __init__(self, resource_id, alive, pending=False, status=None,
+                 reason=None):
         self.resource_id = resource_id
         self.alive = alive
+        self.status = status
+        self.reason = reason
         now = _now()
         assert alive in (True, False, None)
         if alive is True:
@@ -255,6 +271,8 @@ class _LinkCheckerResult(object):
             num_fails=self.num_fails,
             pending=self.pending,
             pending_since=self.pending_since,
+            status=self.status,
+            reason=self.reason,
         )
 
 

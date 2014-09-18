@@ -33,6 +33,11 @@ class TestUpsertAndGet(object):
         assert result["pending"] is False
         assert result["pending_since"] is None
 
+        # status and reason should be None, since we didn't pass either to
+        # upsert().
+        assert result["status"] is None
+        assert result["reason"] is None
+
     def test_insert_failed_result(self):
         """Test checking a resource for the first time when the link is broken.
 
@@ -49,6 +54,29 @@ class TestUpsertAndGet(object):
         assert result["num_fails"] == 1
         assert result["pending"] is False
         assert result["pending_since"] is None
+
+        # status and reason should be None, since we didn't pass either to
+        # upsert().
+        assert result["status"] is None
+        assert result["reason"] is None
+
+    def test_insert_result_with_status_and_reason(self):
+        """Test cresting a new result row with a status and reason."""
+        before = datetime.datetime.utcnow()
+        results.upsert("test_resource_id", False, status=500,
+                       reason="Internal Server Error")
+        after = datetime.datetime.utcnow()
+        result = results.get("test_resource_id")
+        assert result["resource_id"] == "test_resource_id"
+        assert result["alive"] is False
+        assert result["last_checked"] > before
+        assert result["last_checked"] < after
+        assert result["last_successful"] is None
+        assert result["num_fails"] == 1
+        assert result["pending"] is False
+        assert result["pending_since"] is None
+        assert result["status"] == 500
+        assert result["reason"] == "Internal Server Error"
 
     def test_update_with_successful_result(self):
         """Test updating a resource's row with a new successful result."""
@@ -69,6 +97,11 @@ class TestUpsertAndGet(object):
         assert result["pending"] is False
         assert result["pending_since"] is None
 
+        # status and reason should be None, since we didn't pass either to
+        # upsert().
+        assert result["status"] is None
+        assert result["reason"] is None
+
     def test_update_with_failed_result(self):
         """Test updating a resource's row with a new failed result."""
         results.upsert("test_resource_id", True)
@@ -86,6 +119,32 @@ class TestUpsertAndGet(object):
         assert result["num_fails"] == 1
         assert result["pending"] is False
         assert result["pending_since"] is None
+
+        # status and reason should be None, since we didn't pass either to
+        # upsert().
+        assert result["status"] is None
+        assert result["reason"] is None
+
+    def test_update_replacing_status_and_reason(self):
+        """Passing status and reason params to upsert() should overwrite."""
+        results.upsert("test_resource_id", True, status=200, reason="OK")
+
+        results.upsert("test_resource_id", False, status=404,
+                       reason="Not Found")
+
+        result = results.get("test_resource_id")
+        assert result["status"] == 404
+        assert result["reason"] == "Not Found"
+
+    def test_update_with_no_status_or_reason_clears(self):
+        """Passing no status or reason to upsert() should clear existing."""
+        results.upsert("test_resource_id", True, status=200, reason="OK")
+
+        results.upsert("test_resource_id", False)
+
+        result = results.get("test_resource_id")
+        assert result["status"] is None
+        assert result["reason"] is None
 
     def test_incrementing_num_fails(self):
         """Test that repeated bad results increment num_fails."""
@@ -194,6 +253,30 @@ class TestUpsertAndGet(object):
         assert result["pending_since"] > before
         assert result["pending_since"] < after
 
+    def test_make_pending_does_not_change_status_or_reason(self):
+        """Marking a result as pending should not change status or reason.
+
+        Marking a result as pending just says "we are expecting a new result
+        for this resource soon", it should not change the existing results.
+
+        """
+        results.upsert("test_resource_id", True, status=200, reason="OK")
+        last_successful = results.get("test_resource_id")["last_successful"]
+        results.upsert("test_resource_id", False, status=401,
+                       reason="Unauthorized")
+        last_checked = results.get("test_resource_id")["last_checked"]
+
+        results._make_pending(["test_resource_id"])
+
+        result = results.get("test_resource_id")
+        assert result["num_fails"] == 1
+        assert result["last_successful"] == last_successful
+        assert result["last_checked"] == last_checked
+        assert result["alive"] is False
+        assert result["pending"] is True
+        assert result["status"] == 401
+        assert result["reason"] == "Unauthorized"
+
 
 class TestGetResourcesToCheck(object):
     """Tests for the get_resources_to_check() function."""
@@ -201,6 +284,7 @@ class TestGetResourcesToCheck(object):
     def setup(self):
         results.create_database_table()
         helpers.reset_db()
+        results.create_database_table()
 
     def test_with_5_new_resources_and_request_10(self):
         """
@@ -257,11 +341,11 @@ class TestGetResourcesToCheck(object):
         resource_5 = factories.Resource()['id']
         twenty_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(
             hours=23)
-        results.upsert(resource_1, True, twenty_hours_ago)
-        results.upsert(resource_2, True, twenty_hours_ago)
-        results.upsert(resource_3, True, twenty_hours_ago)
-        results.upsert(resource_4, True, twenty_hours_ago)
-        results.upsert(resource_5, True, twenty_hours_ago)
+        results.upsert(resource_1, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_2, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_3, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_4, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_5, True, last_checked=twenty_hours_ago)
 
         resources_to_check = results.get_resources_to_check(10)
 
@@ -282,11 +366,11 @@ class TestGetResourcesToCheck(object):
         resource_5 = factories.Resource()['id']
         twenty_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(
             hours=23)
-        results.upsert(resource_1, True, twenty_hours_ago)
-        results.upsert(resource_2, True, twenty_hours_ago)
-        results.upsert(resource_3, True, twenty_hours_ago)
-        results.upsert(resource_4, True, twenty_hours_ago)
-        results.upsert(resource_5, True, twenty_hours_ago)
+        results.upsert(resource_1, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_2, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_3, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_4, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_5, True, last_checked=twenty_hours_ago)
         resource_6 = factories.Resource()['id']
         resource_7 = factories.Resource()['id']
         resource_8 = factories.Resource()['id']
@@ -314,11 +398,11 @@ class TestGetResourcesToCheck(object):
         resource_4 = factories.Resource()['id']
         resource_5 = factories.Resource()['id']
         twenty_hours_ago = now - datetime.timedelta(hours=23)
-        results.upsert(resource_1, True, twenty_hours_ago)
-        results.upsert(resource_2, True, twenty_hours_ago)
-        results.upsert(resource_3, True, twenty_hours_ago)
-        results.upsert(resource_4, True, twenty_hours_ago)
-        results.upsert(resource_5, True, twenty_hours_ago)
+        results.upsert(resource_1, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_2, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_3, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_4, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_5, True, last_checked=twenty_hours_ago)
         resource_6 = factories.Resource()['id']
         resource_7 = factories.Resource()['id']
         resource_8 = factories.Resource()['id']
@@ -326,15 +410,15 @@ class TestGetResourcesToCheck(object):
         resource_10 = factories.Resource()['id']
         # We mix up the order in which these resources were checked a bit.
         results.upsert(
-            resource_7, True, now - datetime.timedelta(hours=34))
+            resource_7, True, last_checked=now - datetime.timedelta(hours=34))
         results.upsert(
-            resource_6, True, now - datetime.timedelta(hours=33))
+            resource_6, True, last_checked=now - datetime.timedelta(hours=33))
         results.upsert(
-            resource_9, True, now - datetime.timedelta(hours=32))
+            resource_9, True, last_checked=now - datetime.timedelta(hours=32))
         results.upsert(
-            resource_10, True, now - datetime.timedelta(hours=31))
+            resource_10, True, last_checked=now - datetime.timedelta(hours=31))
         results.upsert(
-            resource_8, True, now - datetime.timedelta(hours=30))
+            resource_8, True, last_checked=now - datetime.timedelta(hours=30))
 
         resources_to_check = results.get_resources_to_check(10)
 
@@ -354,11 +438,11 @@ class TestGetResourcesToCheck(object):
         resource_4 = factories.Resource()['id']
         resource_5 = factories.Resource()['id']
         twenty_hours_ago = now - datetime.timedelta(hours=20)
-        results.upsert(resource_1, True, twenty_hours_ago)
-        results.upsert(resource_2, True, twenty_hours_ago)
-        results.upsert(resource_3, True, twenty_hours_ago)
-        results.upsert(resource_4, True, twenty_hours_ago)
-        results.upsert(resource_5, True, twenty_hours_ago)
+        results.upsert(resource_1, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_2, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_3, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_4, True, last_checked=twenty_hours_ago)
+        results.upsert(resource_5, True, last_checked=twenty_hours_ago)
 
         # Create 5 resources with pending checks from < 2 hours ago.
         resource_6 = factories.Resource()['id']
@@ -377,11 +461,16 @@ class TestGetResourcesToCheck(object):
         resource_13 = factories.Resource()['id']
         resource_14 = factories.Resource()['id']
         resource_15 = factories.Resource()['id']
-        results.upsert(resource_11, True, now - datetime.timedelta(hours=35))
-        results.upsert(resource_12, True, now - datetime.timedelta(hours=34))
-        results.upsert(resource_13, True, now - datetime.timedelta(hours=33))
-        results.upsert(resource_14, True, now - datetime.timedelta(hours=32))
-        results.upsert(resource_15, True, now - datetime.timedelta(hours=31))
+        results.upsert(resource_11, True,
+                       last_checked=now - datetime.timedelta(hours=35))
+        results.upsert(resource_12, True,
+                       last_checked=now - datetime.timedelta(hours=34))
+        results.upsert(resource_13, True,
+                       last_checked=now - datetime.timedelta(hours=33))
+        results.upsert(resource_14, True,
+                       last_checked=now - datetime.timedelta(hours=32))
+        results.upsert(resource_15, True,
+                       last_checked=now - datetime.timedelta(hours=31))
 
         resources_to_check = results.get_resources_to_check(10)
 
@@ -422,7 +511,7 @@ class TestGetResourcesToCheck(object):
         resource_2 = factories.Resource()['id']
         thirty_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(
             hours=30)
-        results.upsert(resource_2, True, thirty_hours_ago)
+        results.upsert(resource_2, True, last_checked=thirty_hours_ago)
 
         # A resource with a pending check from > 2 hours ago.
         resource_3 = factories.Resource()['id']
@@ -442,7 +531,7 @@ class TestGetResourcesToCheck(object):
         test_resource = factories.Resource()['id']
         ten_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(
             hours=10)
-        results.upsert(test_resource, True, ten_hours_ago)
+        results.upsert(test_resource, True, last_checked=ten_hours_ago)
 
         results_ = results.get_resources_to_check(
             10, since=datetime.timedelta(hours=5))
@@ -456,7 +545,7 @@ class TestGetResourcesToCheck(object):
         test_resource = factories.Resource()['id']
         thirty_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(
             hours=30)
-        results.upsert(test_resource, True, thirty_hours_ago)
+        results.upsert(test_resource, True, last_checked=thirty_hours_ago)
 
         results_ = results.get_resources_to_check(
             10, since=datetime.timedelta(hours=48))
