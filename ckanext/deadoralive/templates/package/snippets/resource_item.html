@@ -1,0 +1,9 @@
+{% ckan_extends %}
+
+{% block resource_item_title %}
+  {{ super() }}
+  {% set link_checker_result = h.ckanext_deadoralive_get(res.id) %}
+  {% if link_checker_result.broken %}
+    (!) Broken
+  {% endif %}
+{% endblock %}
