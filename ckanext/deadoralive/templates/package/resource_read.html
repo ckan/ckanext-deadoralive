@@ -1,0 +1,53 @@
+{% ckan_extends %}
+
+{% block primary_content %}
+
+  {% set link_checker_result = h.ckanext_deadoralive_get(c.resource.id) %}
+  {# Important! Don't show results if link_checker_result.alive is None,
+     that just means we have a pending result but not an actual result yet. #}
+  {% if link_checker_result and link_checker_result.alive != None %}
+    <section class="module module-narrow module-shallow">
+      <div class="module-content">
+        <h2>
+          {% if link_checker_result.alive %}
+            (tick) This resource link is working
+          {% else %}
+            (!) This resource link is broken
+          {% endif %}
+        </h2>
+        {% if link_checker_result.alive %}
+          <p>
+            This resource link was working when we last checked it on
+            {{ h.render_datetime(link_checker_result.last_successful) }}.
+          </p>
+        {% else %}
+          <p>
+            This resource link was broken when we last checked it on
+            {{ h.render_datetime(link_checker_result.last_checked) }}:
+          </p>
+          <ul>
+            <li>The file could not be downloaded.</li>
+            {% if link_checker_result.status or link_checker_result.reason %}
+              <li>The server returned an error:{% if link_checker_result.status %} {{ link_checker_result.status }}{% endif %}{% if link_checker_result.reason %} {{ link_checker_result.reason }}{% endif %}.</li>
+            {% endif %}
+            <li>
+              {# Comment - this assumes that links won't be marked as broken
+                 unless they've been broken for multiple consecutive checks,
+                 so we assume that "{{ num_fails }} checks" is plural here. #}
+              The link has been broken for the last
+              {{ link_checker_result.num_fails }} times that we've checked it.
+            </li>
+            {% if link_checker_result.last_successful %}
+              <li>
+                The link was last working when we checked it on
+                {{ h.render_datetime(link_checker_result.last_successful) }}.
+              </li>
+            {% endif %}
+          </ul>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  {{ super() }}
+{% endblock %}
