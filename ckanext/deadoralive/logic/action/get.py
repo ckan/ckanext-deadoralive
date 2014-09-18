@@ -50,14 +50,19 @@ def get(context, data_dict):
     :param resource_id: the resource to return the result data for
     :type resource_id: string
 
-    :returns: the latest link check data for the resource
-    :rtype: dict
+    :returns: the latest link check data for the resource, or None if there are
+      no results for this resource
+    :rtype: dict or None
 
     """
     # TODO: Authorization.
     # TODO: Validation.
     resource_id = data_dict["resource_id"]
-    result = results.get(resource_id)
+
+    try:
+        result = results.get(resource_id)
+    except results.NoResultForResourceError:
+        return None
 
     # datetimes aren't JSON serializable.
     result["last_checked"] = result["last_checked"].isoformat()
