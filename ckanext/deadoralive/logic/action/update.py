@@ -10,6 +10,14 @@ def upsert(context, data_dict, last_checked=None):
     :param alive: whether or not the link was found to be alive
     :type alive: bool
 
+    :param status: the HTTP status code when the resource was checked,
+        e.g. 200, 404 or 500
+    :type status: int
+
+    :param reason: the reason for the failed or successful resource check,
+        e.g. "OK", "Not Found", "Internal Server Error"
+    :type reason: string
+
     """
     # TODO: Authorization.
     # TODO: Validation.
