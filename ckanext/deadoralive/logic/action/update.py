@@ -1,7 +1,7 @@
 import ckanext.deadoralive.model.results as results
 
 
-def upsert(context, data_dict):
+def upsert(context, data_dict, last_checked=None):
     """Save a link check result for a resource.
 
     :param resource_id: the id of the resource that was checked
@@ -18,4 +18,5 @@ def upsert(context, data_dict):
     status = data_dict.get("status")
     reason = data_dict.get("reason")
 
-    results.upsert(resource_id, alive, status=status, reason=reason)
+    results.upsert(resource_id, alive, status=status, reason=reason,
+                   last_checked=last_checked)

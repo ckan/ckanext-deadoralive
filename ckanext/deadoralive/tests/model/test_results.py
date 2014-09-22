@@ -582,3 +582,33 @@ class TestGetResourcesToCheck(object):
             10, pending_since=datetime.timedelta(hours=4))
 
         assert results_ == []
+
+
+class TestAll(object):
+    """Tests for the all() function."""
+
+    def setup(self):
+        results.create_database_table()
+        helpers.reset_db()
+
+    def test_with_no_results(self):
+        """When there are no results all() should return an empty list."""
+        assert results.all() == []
+
+    def test_with_one_result(self):
+        results.upsert("test_resource_id", True)
+
+        results_ = results.all()
+        assert len(results_) == 1
+        assert results_[0]["resource_id"] == "test_resource_id"
+
+    def test_with_many_results(self):
+        results.upsert("test_resource_1", True)
+        results.upsert("test_resource_2", False)
+        results.upsert("test_resource_3", True)
+
+        results_ = results.all()
+        assert len(results_) == 3
+        assert results_[0]["resource_id"] == "test_resource_1"
+        assert results_[1]["resource_id"] == "test_resource_2"
+        assert results_[2]["resource_id"] == "test_resource_3"

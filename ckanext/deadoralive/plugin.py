@@ -15,6 +15,7 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.ITemplateHelpers)
+    plugins.implements(plugins.IRoutes, inherit=True)
 
     # IConfigurable
 
@@ -52,6 +53,8 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
                 get.get_resources_to_check,
             "ckanext_deadoralive_upsert": update.upsert,
             "ckanext_deadoralive_get": get.get,
+            "ckanext_deadoralive_broken_links_by_organization":
+                get.broken_links_by_organization,
         }
 
     # ITemplateHelpers
@@ -60,3 +63,11 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
         return {
             "ckanext_deadoralive_get": helpers.get_results,
         }
+
+    # IRoutes
+
+    def before_map(self, map_):
+        map_.connect("/broken_links",
+                     controller="ckanext.deadoralive.controllers:BrokenLinksController",
+                     action="broken_links_by_organization")
+        return map_

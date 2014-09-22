@@ -103,6 +103,16 @@ def get(resource_id):
     return _get(resource_id).as_dict()
 
 
+def all():
+    """Return all the link checker results.
+
+    :rtype: list of dicts
+
+    """
+    return [result.as_dict() for result in
+            ckan.model.Session.query(_LinkCheckerResult).all()]
+
+
 # FIXME: What about resources belonging to private datasets?
 def get_resources_to_check(n, since=None, pending_since=None):
     """Return up to ``n`` resources to be checked for dead or alive links.
