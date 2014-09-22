@@ -9,6 +9,10 @@ import ckanext.deadoralive.model.results as results
 import ckanext.deadoralive.tests.factories as factories
 
 
+def strptime(datetime_string):
+    return datetime.datetime.strptime(datetime_string, "%Y-%m-%dT%H:%M:%S.%f")
+
+
 class TestUpsertAndGet(object):
     """Tests for the upsert() and get() functions."""
     def setup(self):
@@ -25,10 +29,10 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
         assert result["resource_id"] == "test_resource_id"
         assert result["alive"] is True
-        assert result["last_checked"] > before
-        assert result["last_checked"] < after
-        assert result["last_successful"] > before
-        assert result["last_successful"] < after
+        assert strptime(result["last_checked"]) > before
+        assert strptime(result["last_checked"]) < after
+        assert strptime(result["last_successful"]) > before
+        assert strptime(result["last_successful"]) < after
         assert result["num_fails"] == 0
         assert result["pending"] is False
         assert result["pending_since"] is None
@@ -48,8 +52,8 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
         assert result["resource_id"] == "test_resource_id"
         assert result["alive"] is False
-        assert result["last_checked"] > before
-        assert result["last_checked"] < after
+        assert strptime(result["last_checked"]) > before
+        assert strptime(result["last_checked"]) < after
         assert result["last_successful"] is None
         assert result["num_fails"] == 1
         assert result["pending"] is False
@@ -69,8 +73,8 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
         assert result["resource_id"] == "test_resource_id"
         assert result["alive"] is False
-        assert result["last_checked"] > before
-        assert result["last_checked"] < after
+        assert strptime(result["last_checked"]) > before
+        assert strptime(result["last_checked"]) < after
         assert result["last_successful"] is None
         assert result["num_fails"] == 1
         assert result["pending"] is False
@@ -89,10 +93,10 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
         assert result["resource_id"] == "test_resource_id"
         assert result["alive"] is True
-        assert result["last_checked"] > before
-        assert result["last_checked"] < after
-        assert result["last_successful"] > before
-        assert result["last_successful"] < after
+        assert strptime(result["last_checked"]) > before
+        assert strptime(result["last_checked"]) < after
+        assert strptime(result["last_successful"]) > before
+        assert strptime(result["last_successful"]) < after
         assert result["num_fails"] == 0
         assert result["pending"] is False
         assert result["pending_since"] is None
@@ -113,9 +117,9 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
         assert result["resource_id"] == "test_resource_id"
         assert result["alive"] is False
-        assert result["last_checked"] > before
-        assert result["last_checked"] < after
-        assert result["last_successful"] < before
+        assert strptime(result["last_checked"]) > before
+        assert strptime(result["last_checked"]) < after
+        assert strptime(result["last_successful"]) < before
         assert result["num_fails"] == 1
         assert result["pending"] is False
         assert result["pending_since"] is None
@@ -158,8 +162,8 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
 
         assert result["num_fails"] == 3
-        assert result["last_checked"] > before
-        assert result["last_checked"] < after
+        assert strptime(result["last_checked"]) > before
+        assert strptime(result["last_checked"]) < after
 
     def test_reset_num_fails(self):
         """Test that a successful result resets num_fails to 0."""
@@ -173,10 +177,10 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
 
         assert result["num_fails"] == 0
-        assert result["last_checked"] > before
-        assert result["last_checked"] < after
-        assert result["last_successful"] > before
-        assert result["last_successful"] < after
+        assert strptime(result["last_checked"]) > before
+        assert strptime(result["last_checked"]) < after
+        assert strptime(result["last_successful"]) > before
+        assert strptime(result["last_successful"]) < after
 
     def test_reset_pending_status(self):
         """Test that either a successful or failed result resets pending and
@@ -233,8 +237,8 @@ class TestUpsertAndGet(object):
         assert result["last_checked"] == last_checked
         assert result["alive"] is False
         assert result["pending"] is True
-        assert result["pending_since"] > before
-        assert result["pending_since"] < after
+        assert strptime(result["pending_since"]) > before
+        assert strptime(result["pending_since"]) < after
 
     def test_initial_pending_result(self):
         """Test creating a pending result for a resource that has no results.
@@ -250,8 +254,8 @@ class TestUpsertAndGet(object):
         assert result["last_checked"] is None
         assert result["alive"] is None
         assert result["pending"] is True
-        assert result["pending_since"] > before
-        assert result["pending_since"] < after
+        assert strptime(result["pending_since"]) > before
+        assert strptime(result["pending_since"]) < after
 
     def test_make_pending_does_not_change_status_or_reason(self):
         """Marking a result as pending should not change status or reason.

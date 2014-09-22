@@ -263,14 +263,30 @@ class _LinkCheckerResult(object):
 
     def as_dict(self):
         """Return a dictionary representation of this link checker result."""
+
+        if self.last_checked:
+            last_checked = self.last_checked.isoformat()
+        else:
+            last_checked = None
+
+        if self.last_successful:
+            last_successful = self.last_successful.isoformat()
+        else:
+            last_successful = None
+
+        if self.pending_since:
+            pending_since = self.pending_since.isoformat()
+        else:
+            pending_since = None
+
         return dict(
             resource_id=self.resource_id,
             alive=self.alive,
-            last_checked=self.last_checked,
-            last_successful=self.last_successful,
+            last_checked=last_checked,
+            last_successful=last_successful,
             num_fails=self.num_fails,
             pending=self.pending,
-            pending_since=self.pending_since,
+            pending_since=pending_since,
             status=self.status,
             reason=self.reason,
         )

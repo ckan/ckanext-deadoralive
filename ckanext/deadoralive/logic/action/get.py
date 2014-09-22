@@ -64,13 +64,6 @@ def get(context, data_dict):
     except results.NoResultForResourceError:
         return None
 
-    # datetimes aren't JSON serializable.
-    result["last_checked"] = result["last_checked"].isoformat()
-    if result["last_successful"]:
-        result["last_successful"] = result["last_successful"].isoformat()
-    if result["pending_since"]:
-        result["pending_since"] = result["pending_since"].isoformat()
-
     # Add "broken" to the result - whether or not we consider the link to be
     # broken according to our "it must have been dead for at least N consecutive
     # checks over a period of at least M hours" test.
