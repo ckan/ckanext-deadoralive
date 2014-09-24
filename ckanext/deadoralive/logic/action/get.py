@@ -1,5 +1,7 @@
 import datetime
 
+import pylons.config
+
 import ckan.plugins.toolkit as toolkit
 import ckanext.deadoralive.model.results as results
 import ckanext.deadoralive.config as config
@@ -197,3 +199,118 @@ def broken_links_by_organization(context, data_dict):
     organization_list = toolkit.get_action("organization_list")
     return _broken_links_by_organization(
         context, organization_list, results.all, _package_search)
+
+
+def _get_email_for_dataset(dataset):
+    return dataset.get('maintainer_email') or dataset.get('author_email')
+
+
+@toolkit.side_effect_free
+def broken_links_by_email(context, data_dict):
+    """Return a report of datasets with broken links grouped by email.
+
+    Datasets with the same maintainer or author email address are grouped
+    together, intended to make it convenient for sysadmins to email the people
+    responsible for datasets about broken links.
+
+    Sample output::
+
+        [
+          { "email": "someone@someorganization.com",
+            "mailto": "<mailto URL for emailing them about their broken links>",
+            "num_broken_links": 999,
+            "datasets_with_broken_links": [
+              { "name": "dataset name",
+                "num_broken_links": 9,
+                "resources_with_broken_links": [
+                    { "id": 'resource_id", }
+                    ...
+                ]
+              },
+              ...
+          },
+          ...
+        ]
+
+    """
+    # Get a dict mapping resource IDs to link checker results.
+    result_dicts = {}
+    for result in results.all():
+        assert result["resource_id"] not in result_dicts
+        result_dicts[result["resource_id"]] = result
+
+    # Get a list of all the broken datasets on the site, each with a sub-list of
+    # all its broken resources.
+    broken_datasets = []
+    # FIXME: Does package search always return all the datasets here?
+    for dataset in _package_search(data_dict={}):
+        broken_resources = []
+        for resource in dataset.get('resources'):
+            if _is_broken(result_dicts.get(resource["id"])):
+                broken_resources.append(resource["id"])
+        if broken_resources:
+            broken_datasets.append(dict(
+                name=dataset["name"], title=dataset["title"],
+                num_broken_links=len(broken_resources),
+                resources_with_broken_links=broken_resources,
+                email=_get_email_for_dataset(dataset)))
+
+    # Group the broken datasets by email.
+    # We do this as a dict at first because it's easier.
+    emails = {}
+    for dataset in broken_datasets:
+        email = dataset["email"]
+        if email not in emails:
+            emails[email] = {"datasets_with_broken_links": [dataset]}
+        else:
+            emails[email]["datasets_with_broken_links"].append(dataset)
+
+    # Add num. broken links per email, and sort the list of broken datasets for
+    # each email.
+    for email in emails:
+        num_broken_links = 0
+        for dataset in emails[email]["datasets_with_broken_links"]:
+            num_broken_links += dataset["num_broken_links"]
+        emails[email]["num_broken_links"] = num_broken_links
+        # Sort the datasets with most broken links first.
+        emails[email]["datasets_with_broken_links"].sort(
+            key=lambda x: x["num_broken_links"], reverse=True)
+
+    # Turn out dict mapping emails -> broken datasets into a list.
+    report = []
+    for email, dict_ in emails.items():
+        dict_["email"] = email
+        report.append(dict_)
+    # Sort the emails with the most broken links first.
+    report.sort(key=lambda x: x["num_broken_links"], reverse=True)
+
+    # Add mailto: URLs to each report item.
+    for item in report:
+
+        if not item["email"]:
+            continue
+
+        if len(item["datasets_with_broken_links"]) == 1:
+            subject = "You have a dataset with broken links on {site}"
+            subject = subject.format(site=pylons.config["ckan.site_title"])
+            body = "This dataset contains a broken link:%0A%0A{title}%0A{url}"
+            broken_dataset = item["datasets_with_broken_links"][0]
+            url = pylons.config["ckan.site_url"] + toolkit.url_for(
+                controller="package", action="read", id=broken_dataset["name"])
+            body = body.format(title=broken_dataset["title"], url=url)
+
+        else:
+            subject = "You have {n} datasets with broken links on {site}"
+            subject = subject.format(n=len(item["datasets_with_broken_links"]),
+                                     site=pylons.config["ckan.site_title"])
+            body = "These datasets have broken links:"
+            for dataset in item["datasets_with_broken_links"]:
+                url = pylons.config["ckan.site_url"] + toolkit.url_for(
+                    controller="package", action="read", id=dataset["name"])
+                body += "%0A%0A{title}%0A{url}".format(
+                    title=dataset["title"], url=url)
+
+        item["mailto"] = "mailto:{email}?subject={subject}&body={body}".format(
+            email=item["email"], subject=subject, body=body)
+
+    return report

@@ -55,6 +55,8 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
             "ckanext_deadoralive_get": get.get,
             "ckanext_deadoralive_broken_links_by_organization":
                 get.broken_links_by_organization,
+            "ckanext_deadoralive_broken_links_by_email":
+                get.broken_links_by_email,
         }
 
     # ITemplateHelpers
@@ -70,4 +72,7 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
         map_.connect("/broken_links",
                      controller="ckanext.deadoralive.controllers:BrokenLinksController",
                      action="broken_links_by_organization")
+        map_.connect("/broken_links_by_email",
+                     controller="ckanext.deadoralive.controllers:BrokenLinksController",
+                     action="broken_links_by_email")
         return map_

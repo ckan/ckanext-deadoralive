@@ -1,10 +1,45 @@
 '''Test helper functions and classes.'''
+import datetime
 
 import ckan.config.middleware
 import pylons.config as config
 import webtest
 
 import ckanext.deadoralive.model.results as results
+import ckanext.deadoralive.logic.action.update as update
+
+
+def make_broken(resources):
+    """Make the given resources be reported as having broken links.
+
+    By default a resource needs to have >= 3 consecutive failed link checks over
+    a period of >= 3 days to be considered broken.
+
+    """
+    for resource in resources:
+        one_day_ago = datetime.datetime.now() - datetime.timedelta(days=1)
+        four_days_ago = datetime.datetime.now() - datetime.timedelta(days=4)
+        seven_days_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+        data_dict = dict(
+            resource_id=resource["id"],
+            alive=False,
+        )
+        update.upsert(context={}, data_dict=data_dict,
+                      last_checked=one_day_ago)
+        update.upsert(context={}, data_dict=data_dict,
+                      last_checked=four_days_ago)
+        update.upsert(context={}, data_dict=data_dict,
+                      last_checked=seven_days_ago)
+
+
+def make_working(resources):
+    """Make the given resources have successful link checker results."""
+    for resource in resources:
+        data_dict = dict(
+            resource_id=resource["id"],
+            alive=True,
+        )
+        update.upsert(context={}, data_dict=data_dict)
 
 
 def _get_test_app():
