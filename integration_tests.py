@@ -13,9 +13,11 @@ import datetime
 
 import httpretty
 import ckan.new_tests.helpers as helpers
-import ckanext.deadoralive.tests.factories as factories
+import ckan.new_tests.factories as factories
+import ckanext.deadoralive.tests.factories as custom_factories
 import ckanext.deadoralive.tests.helpers as custom_helpers
 import ckanext.deadoralive.model.results as results
+import pylons.config as config
 
 import deadoralive
 
@@ -47,6 +49,13 @@ class TestIntegration(custom_helpers.FunctionalTestBaseClass):
         for key in headers:
             headers[key] = str(headers[key])
 
+        # For some reason httpretty puts some of the headers (including the
+        # Authorization header) in method.headers instead of in headers.
+        # Copy them all to the headers we're going to forward to the test app.
+        for key in method.headers:
+            if key not in headers:
+                headers[key] = str(method.headers[key])
+
         if method.command == 'POST':
             response = self.app.post(method.path, headers=headers,
                                      params=method.body)
@@ -71,6 +80,14 @@ class TestIntegration(custom_helpers.FunctionalTestBaseClass):
 
         """
         results.create_database_table()
+
+        user = factories.User()
+
+        # FunctionalTestBaseClass has already made self.app for us, but we
+        # need one with our authorized_users config setting in it so replace it
+        # with our own.
+        config["ckanext.deadoralive.authorized_users"] = user["name"]
+        self.app = custom_helpers._get_test_app()
 
         # The URL of the CKAN site we'll be using.
         # We'll be mocking the URLs on this domain that we expect to be sending
@@ -112,15 +129,16 @@ class TestIntegration(custom_helpers.FunctionalTestBaseClass):
                                body=self._forward_to_test_app)
 
         # Create the resources in CKAN whose links will be checked.
-        resource_1 = factories.Resource(url=url_1)
-        resource_2 = factories.Resource(url=url_2)
-        resource_3 = factories.Resource(url=url_3)
+        resource_1 = custom_factories.Resource(url=url_1)
+        resource_2 = custom_factories.Resource(url=url_2)
+        resource_3 = custom_factories.Resource(url=url_3)
 
         # Call deadoralive: It should get the IDs of the three resources from
         # CKAN.  get each resource's URL from CKAN, test each URL, and then post
         # the test results back to CKAN.
         before = datetime.datetime.utcnow()
-        deadoralive.main("--url {0}".format(ckan_url).split())
+        deadoralive.main("--url {0} --apikey {1}".format(
+            ckan_url, user["apikey"]).split())
         after = datetime.datetime.utcnow()
 
         # Now check that the links were checked and the correct results were

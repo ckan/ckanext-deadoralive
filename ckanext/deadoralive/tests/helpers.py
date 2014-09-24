@@ -9,7 +9,7 @@ import ckanext.deadoralive.model.results as results
 import ckanext.deadoralive.logic.action.update as update
 
 
-def make_broken(resources):
+def make_broken(resources, user):
     """Make the given resources be reported as having broken links.
 
     By default a resource needs to have >= 3 consecutive failed link checks over
@@ -24,22 +24,23 @@ def make_broken(resources):
             resource_id=resource["id"],
             alive=False,
         )
-        update.upsert(context={}, data_dict=data_dict,
+        context = {"user": user["name"]}
+        update.upsert(context=context, data_dict=data_dict,
                       last_checked=one_day_ago)
-        update.upsert(context={}, data_dict=data_dict,
+        update.upsert(context=context, data_dict=data_dict,
                       last_checked=four_days_ago)
-        update.upsert(context={}, data_dict=data_dict,
+        update.upsert(context=context, data_dict=data_dict,
                       last_checked=seven_days_ago)
 
 
-def make_working(resources):
+def make_working(resources, user):
     """Make the given resources have successful link checker results."""
     for resource in resources:
         data_dict = dict(
             resource_id=resource["id"],
             alive=True,
         )
-        update.upsert(context={}, data_dict=data_dict)
+        update.upsert(context={"user": user["name"]}, data_dict=data_dict)
 
 
 # This is a copy of CKAN core's call_auth() test helper, but modified to go

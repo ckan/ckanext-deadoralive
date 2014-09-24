@@ -6,6 +6,7 @@ import ckanext.deadoralive.tests.helpers as custom_helpers
 import ckan.new_tests.factories as factories
 import ckanext.deadoralive.tests.factories as custom_factories
 import ckanext.deadoralive.logic.action.get as get
+import ckanext.deadoralive.config as config
 
 
 class TestGetResourcesToCheck(custom_helpers.FunctionalTestBaseClass):
@@ -147,6 +148,8 @@ class TestBrokenLinksByOrganization(custom_helpers.FunctionalTestBaseClass):
                            }]
 
     def test_mix_of_broken_and_working_links(self):
+        user = factories.User()
+        config.authorized_users = [user["name"]]
 
         org_1 = factories.Organization()
         dataset_1 = custom_factories.Dataset(owner_org=org_1["id"])
@@ -168,8 +171,9 @@ class TestBrokenLinksByOrganization(custom_helpers.FunctionalTestBaseClass):
         resource_8 = custom_factories.Resource(package_id=dataset_5["id"])
 
         custom_helpers.make_broken((resource_1, resource_3, resource_4,
-                                    resource_5, resource_6, resource_7))
-        custom_helpers.make_working((resource_2, resource_8))
+                                    resource_5, resource_6, resource_7),
+                                   user)
+        custom_helpers.make_working((resource_2, resource_8), user)
 
         report = helpers.call_action(
             "ckanext_deadoralive_broken_links_by_organization")
@@ -231,6 +235,9 @@ class TestBrokenLinksByEmail(custom_helpers.FunctionalTestBaseClass):
         should be grouped into a single email: None dict in the report.
 
         """
+        user = factories.User()
+        config.authorized_users = [user["name"]]
+
         # Create 3 datasets with no authors or maintainers.
         dataset_1 = custom_factories.Dataset()
         dataset_2 = custom_factories.Dataset()
@@ -241,7 +248,8 @@ class TestBrokenLinksByEmail(custom_helpers.FunctionalTestBaseClass):
         resource_1 = custom_factories.Resource(package_id=dataset_1["id"])
         resource_2 = custom_factories.Resource(package_id=dataset_2["id"])
         resource_3 = custom_factories.Resource(package_id=dataset_3["id"])
-        custom_helpers.make_broken((resource_1, resource_2, resource_3))
+        custom_helpers.make_broken((resource_1, resource_2, resource_3),
+                                   user=user)
 
         result = helpers.call_action(
             "ckanext_deadoralive_broken_links_by_email")
@@ -263,12 +271,15 @@ class TestBrokenLinksByEmail(custom_helpers.FunctionalTestBaseClass):
         """Test that the mailto: URLs are formed correctly when one broken link.
 
         """
+        user = factories.User()
+        config.authorized_users = [user["name"]]
+
         dataset = custom_factories.Dataset(
             maintainer_email="test_maintainer@test.com")
         resource_1 = custom_factories.Resource(package_id=dataset["id"])
         resource_2 = custom_factories.Resource(package_id=dataset["id"])
         resource_3 = custom_factories.Resource(package_id=dataset["id"])
-        custom_helpers.make_broken((resource_1, resource_2, resource_3))
+        custom_helpers.make_broken((resource_1, resource_2, resource_3), user)
 
         result = helpers.call_action(
             "ckanext_deadoralive_broken_links_by_email")
@@ -291,6 +302,9 @@ class TestBrokenLinksByEmail(custom_helpers.FunctionalTestBaseClass):
         many datasets with broken links.
 
         """
+        user = factories.User()
+        config.authorized_users = [user["name"]]
+
         dataset_1 = custom_factories.Dataset(
             maintainer_email="test_maintainer@test.com")
         resource_1 = custom_factories.Resource(package_id=dataset_1["id"])
@@ -300,7 +314,8 @@ class TestBrokenLinksByEmail(custom_helpers.FunctionalTestBaseClass):
         dataset_3 = custom_factories.Dataset(
             maintainer_email="test_maintainer@test.com")
         resource_3 = custom_factories.Resource(package_id=dataset_3["id"])
-        custom_helpers.make_broken((resource_1, resource_2, resource_3))
+        custom_helpers.make_broken((resource_1, resource_2, resource_3),
+                                   user)
 
         result = helpers.call_action(
             "ckanext_deadoralive_broken_links_by_email")
@@ -319,6 +334,8 @@ class TestBrokenLinksByEmail(custom_helpers.FunctionalTestBaseClass):
         assert result["mailto"] == expected_mailto
 
     def test_mix_of_broken_and_working_links(self):
+        user = factories.User()
+        config.authorized_users = [user["name"]]
 
         maintainer_1 = "maintainer_1@maintainers.com"
         dataset_1 = custom_factories.Dataset(
@@ -345,8 +362,8 @@ class TestBrokenLinksByEmail(custom_helpers.FunctionalTestBaseClass):
         resource_8 = custom_factories.Resource(package_id=dataset_5["id"])
 
         custom_helpers.make_broken((resource_1, resource_3, resource_4,
-                                    resource_5, resource_6, resource_7))
-        custom_helpers.make_working((resource_2, resource_8))
+                                    resource_5, resource_6, resource_7), user)
+        custom_helpers.make_working((resource_2, resource_8), user)
 
         report = helpers.call_action(
             "ckanext_deadoralive_broken_links_by_email")

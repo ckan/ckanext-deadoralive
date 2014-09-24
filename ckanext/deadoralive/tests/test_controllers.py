@@ -2,11 +2,14 @@
 import ckan.new_tests.factories as factories
 import ckanext.deadoralive.tests.helpers as custom_helpers
 import ckanext.deadoralive.tests.factories as custom_factories
+import ckanext.deadoralive.config as config
 
 
 class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
 
     def test_broken_links_by_organization(self):
+        user = factories.User()
+        config.authorized_users = [user["name"]]
 
         org_1 = factories.Organization()
         dataset_1 = custom_factories.Dataset(owner_org=org_1["id"])
@@ -28,8 +31,9 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         resource_8 = custom_factories.Resource(package_id=dataset_5["id"])
 
         custom_helpers.make_broken((resource_1, resource_3, resource_4,
-                                    resource_5, resource_6, resource_7))
-        custom_helpers.make_working((resource_2, resource_8))
+                                    resource_5, resource_6, resource_7),
+                                   user=user)
+        custom_helpers.make_working((resource_2, resource_8), user=user)
 
         response = self.app.get("/broken_links")
 
@@ -43,6 +47,8 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         assert dataset_5["name"] in response
 
     def test_broken_links_by_email(self):
+        sysadmin = custom_factories.Sysadmin()
+        extra_environ = {'REMOTE_USER': str(sysadmin["name"])}
 
         maintainer_1 = "maintainer_1@maintainers.com"
         dataset_1 = custom_factories.Dataset(
@@ -69,10 +75,12 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         resource_8 = custom_factories.Resource(package_id=dataset_5["id"])
 
         custom_helpers.make_broken((resource_1, resource_3, resource_4,
-                                    resource_5, resource_6, resource_7))
-        custom_helpers.make_working((resource_2, resource_8))
+                                    resource_5, resource_6, resource_7),
+                                   user=sysadmin)
+        custom_helpers.make_working((resource_2, resource_8), user=sysadmin)
 
-        response = self.app.get("/broken_links_by_email")
+        response = self.app.get("/broken_links_by_email",
+                                extra_environ=extra_environ)
 
         assert maintainer_1 in response
         assert maintainer_2 in response
