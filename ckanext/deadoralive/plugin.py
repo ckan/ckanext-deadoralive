@@ -8,6 +8,7 @@ import ckanext.deadoralive.config as config
 import ckanext.deadoralive.logic.action.get as get
 import ckanext.deadoralive.logic.action.update as update
 import ckanext.deadoralive.helpers as helpers
+import ckanext.deadoralive.logic.auth.update
 
 
 class DeadOrAlivePlugin(plugins.SingletonPlugin):
@@ -16,6 +17,7 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IActions)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IRoutes, inherit=True)
+    plugins.implements(plugins.IAuthFunctions)
 
     # IConfigurable
 
@@ -39,6 +41,10 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
             config_.get(
                 "ckanext.deadoralive.broken_resource_min_hours",
                 config.broken_resource_min_hours))
+        config.authorized_users = toolkit.aslist(
+            config_.get(
+                "ckanext.deadoralive.authorized_users",
+                config.authorized_users))
 
     # IConfigurer
 
@@ -76,3 +82,11 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
                      controller="ckanext.deadoralive.controllers:BrokenLinksController",
                      action="broken_links_by_email")
         return map_
+
+    # IAuthFunctions
+
+    def get_auth_functions(self):
+        return {
+            "ckanext_deadoralive_upsert":
+                ckanext.deadoralive.logic.auth.update.upsert,
+        }

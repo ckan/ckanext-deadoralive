@@ -42,6 +42,46 @@ def make_working(resources):
         update.upsert(context={}, data_dict=data_dict)
 
 
+# This is a copy of CKAN core's call_auth() test helper, but modified to go
+# through check_access() instead of calling the auth functions directly,
+# this means it supports auth functions defined in plugins.
+def call_auth(auth_name, context, **kwargs):
+    '''Call the named ``ckan.logic.auth`` function and return the result.
+
+    This is just a convenience function for tests in
+    :py:mod:`ckan.new_tests.logic.auth` to use.
+
+    Usage::
+
+        result = helpers.call_auth('user_update', context=context,
+                                   id='some_user_id',
+                                   name='updated_user_name')
+
+    :param auth_name: the name of the auth function to call, e.g.
+        ``'user_update'``
+    :type auth_name: string
+
+    :param context: the context dict to pass to the auth function, must
+        contain ``'user'`` and ``'model'`` keys,
+        e.g. ``{'user': 'fred', 'model': my_mock_model_object}``
+    :type context: dict
+
+    :returns: the dict that the auth function returns, e.g.
+        ``{'success': True}`` or ``{'success': False, msg: '...'}``
+        or just ``{'success': False}``
+    :rtype: dict
+
+    '''
+    import ckan.logic.auth.update
+
+    assert 'user' in context, ('Test methods must put a user name in the '
+                               'context dict')
+    assert 'model' in context, ('Test methods must put a model in the '
+                                'context dict')
+
+    return ckan.logic.check_access(auth_name, context, data_dict=kwargs)
+
+
 def _get_test_app():
     '''Return a webtest.TestApp for CKAN, with legacy templates disabled.
 

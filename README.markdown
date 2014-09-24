@@ -22,6 +22,15 @@ Config Settings
 In the `[app:main]` section of the CKAN config file:
 
 
+    # The names of the users who're allowed to access the deadoralive plugin's
+    # API to post link checker results.
+    # The API key of one of these users must be passed to deadoralive.py when
+    # you run it.
+    # We recommend creating a special deadoralive user for this purpose that is
+    # not a sysadmin or organization admin user - that way the link checker
+    # can run with the minimum permissions that it needs.
+    ckanext.deadoralive.authorized_users = deadoralive
+
     # The minimum number of hours to wait before re-checking a resource
     # (optional, default: 24).
     ckanext.deadoralive.recheck_resources_after = 24
@@ -38,6 +47,7 @@ In the `[app:main]` section of the CKAN config file:
     # The minimum number of hours that a resource's link must be broken for
     # before we mark that resource as broken in CKAN.
     ckanext.deadoralive.broken_resource_min_hours = 36
+
 
 
 Theory of Operation
