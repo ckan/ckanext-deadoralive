@@ -9,6 +9,7 @@ import ckanext.deadoralive.logic.action.get as get
 import ckanext.deadoralive.logic.action.update as update
 import ckanext.deadoralive.helpers as helpers
 import ckanext.deadoralive.logic.auth.update
+import ckanext.deadoralive.logic.auth.get
 
 
 class DeadOrAlivePlugin(plugins.SingletonPlugin):
@@ -89,4 +90,12 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
         return {
             "ckanext_deadoralive_upsert":
                 ckanext.deadoralive.logic.auth.update.upsert,
+            "ckanext_deadoralive_get_resources_to_check":
+                ckanext.deadoralive.logic.auth.get.get_resources_to_check,
+            "ckanext_deadoralive_get":
+                ckanext.deadoralive.logic.auth.get.get,
+            "ckanext_deadoralive_broken_links_by_organization":
+                ckanext.deadoralive.logic.auth.get.broken_links_by_organization,
+            "ckanext_deadoralive_broken_links_by_email":
+                ckanext.deadoralive.logic.auth.get.broken_links_by_email,
         }

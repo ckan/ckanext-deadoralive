@@ -31,7 +31,9 @@ def get_resources_to_check(context, data_dict):
     :rtype: list of strings
 
     """
-    # TODO: Authorization.
+    toolkit.check_access("ckanext_deadoralive_get_resources_to_check",
+                         context, data_dict)
+
     # TODO: Validation.
 
     recheck_resources_after = config.recheck_resources_after
@@ -82,6 +84,7 @@ def _is_broken(result):
     return broken
 
 
+@toolkit.side_effect_free
 def get(context, data_dict):
     """Get the latest link check result data for a resource.
 
@@ -93,8 +96,10 @@ def get(context, data_dict):
     :rtype: dict or None
 
     """
-    # TODO: Authorization.
+    toolkit.check_access("ckanext_deadoralive_get", context, data_dict)
+
     # TODO: Validation.
+
     resource_id = data_dict["resource_id"]
 
     try:
@@ -196,6 +201,9 @@ def broken_links_by_organization(context, data_dict):
         ]
 
     """
+    toolkit.check_access("ckanext_deadoralive_broken_links_by_organization",
+                         context, data_dict)
+
     organization_list = toolkit.get_action("organization_list")
     return _broken_links_by_organization(
         context, organization_list, results.all, _package_search)
@@ -233,6 +241,9 @@ def broken_links_by_email(context, data_dict):
         ]
 
     """
+    toolkit.check_access("ckanext_deadoralive_broken_links_by_email",
+                         context, data_dict)
+
     # Get a dict mapping resource IDs to link checker results.
     result_dicts = {}
     for result in results.all():
