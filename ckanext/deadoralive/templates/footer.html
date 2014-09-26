@@ -1,0 +1,6 @@
+{% ckan_extends %}
+
+{% block footer_links %}
+  {{ super() }}
+  <li><a href="{{ h.url_for(controller='ckanext.deadoralive.controllers:BrokenLinksController', action='broken_links_by_organization') }}">Broken links on this site</a></li>
+{% endblock %}

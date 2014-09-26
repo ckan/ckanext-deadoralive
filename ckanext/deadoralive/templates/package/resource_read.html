@@ -39,6 +39,7 @@
               </li>
             {% endif %}
           </ul>
+          <p>See a <a href="{{ h.url_for(controller='ckanext.deadoralive.controllers:BrokenLinksController', action='broken_links_by_organization') }}">report of all broken resource links on this site</a>.</p>
         {% else %}
           <p>
             This resource link was working when we last checked it on
