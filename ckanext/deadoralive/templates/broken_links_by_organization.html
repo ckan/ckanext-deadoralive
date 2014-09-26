@@ -1,12 +1,16 @@
-<ul>
-  {% for organization in organizations %}
-    <li>
-      {{ organization.name }} - {{organization.num_broken_links }} broken links:
-      <ul>
-        {% for dataset in organization.datasets_with_broken_links %} 
-          <li>{{ dataset.name }} - {{ dataset.num_broken_links }} broken links</li>
-        {% endfor %}
-      </ul>
-    </li>
-  {% endfor %}
-</ul>
+{% if organizations %}
+  <ul>
+    {% for organization in organizations %}
+      <li>
+        {{ organization.name }} - {{organization.num_broken_links }} broken links:
+        <ul>
+          {% for dataset in organization.datasets_with_broken_links %} 
+            <li>{{ dataset.name }} - {{ dataset.num_broken_links }} broken links</li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  This site has no broken links! :)
+{% endif %}

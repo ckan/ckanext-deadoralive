@@ -1,14 +1,18 @@
-<ul>
-  {% for item in report %}
-    <li>
-      <a href="{{ item.mailto }}">
-        {{ item.email }} - {{ item.num_broken_links }} broken links:
-      </a>
-      <ul>
-        {% for dataset in item.datasets_with_broken_links %}
-          <li><a href="{{ h.url_for(controller="package", action="read", id=dataset.name) }}">{{ dataset.title }}</a> - {{ dataset.num_broken_links }} broken links</li>
-        {% endfor %}
-      </ul>
-    </li>
-  {% endfor %}
-</ul>
+{% if report %}
+  <ul>
+    {% for item in report %}
+      <li>
+        <a href="{{ item.mailto }}">
+          {{ item.email }} - {{ item.num_broken_links }} broken links:
+        </a>
+        <ul>
+          {% for dataset in item.datasets_with_broken_links %}
+            <li><a href="{{ h.url_for(controller="package", action="read", id=dataset.name) }}">{{ dataset.title }}</a> - {{ dataset.num_broken_links }} broken links</li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  This site has no broken links! :)
+{% endif %}

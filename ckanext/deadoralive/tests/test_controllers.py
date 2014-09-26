@@ -46,6 +46,10 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         assert dataset_4["name"] in response
         assert dataset_5["name"] in response
 
+    def test_broken_links_by_organization_when_no_broken_links(self):
+        response = self.app.get("/broken_links")
+        assert "This site has no broken links" in response
+
     def test_broken_links_by_email(self):
         sysadmin = custom_factories.Sysadmin()
         extra_environ = {'REMOTE_USER': str(sysadmin["name"])}
@@ -96,3 +100,12 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         user = factories.User()
         for extra_environ in (None, {'REMOTE_USER': str(user["name"])}):
             self.app.get("/broken_links_by_email", status=302)
+
+    def test_broken_links_by_email_when_no_broken_links(self):
+        sysadmin = custom_factories.Sysadmin()
+        extra_environ = {'REMOTE_USER': str(sysadmin["name"])}
+
+        response = self.app.get("/broken_links_by_email",
+                                extra_environ=extra_environ)
+
+        assert "This site has no broken links" in response
