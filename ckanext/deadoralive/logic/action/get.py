@@ -116,7 +116,8 @@ def _broken_links_by_organization(context, organization_list, all_results,
                                   package_search):
 
     # Get a list of the names of all the site's organizations.
-    organization_names = organization_list(context=context, data_dict={})
+    organizations = organization_list(context=context,
+                                      data_dict={'all_fields': True})
 
     # Get a dict mapping resource IDs to link checker results.
     result_dicts = {}
@@ -126,10 +127,16 @@ def _broken_links_by_organization(context, organization_list, all_results,
 
     # Build the datasets with broken links by organization report.
     report = []
-    for organization_name in organization_names:
+    for organization in organizations:
 
-        organization_report_item = {"name": organization_name,
-                                    "datasets_with_broken_links": []}
+        organization_report_item = {
+            "name": organization["name"],
+            "display_name": (organization.get("title")
+                             or organization.get("name")),
+            "image_display_url": organization["image_display_url"],
+            "description": organization["description"],
+            "packages": organization["packages"],
+            "datasets_with_broken_links": []}
         num_broken_links = 0
 
         # Get a list of all the organization's datasets
@@ -137,7 +144,7 @@ def _broken_links_by_organization(context, organization_list, all_results,
         # for each dataset).
         datasets = package_search(
             data_dict={"fq": "organization:{name}".format(
-                name=organization_name)})
+                name=organization["name"])})
 
         # Build the report dict for each of the organization's datasets.
         for dataset in datasets:
@@ -146,12 +153,12 @@ def _broken_links_by_organization(context, organization_list, all_results,
                                    if _is_broken(result_dicts.get(resource_id))]
             num_broken_links += len(broken_resource_ids)
             if broken_resource_ids:  # Only report datasets with broken links.
-                dataset_report_item = {"name": dataset["name"],
-                                       "num_broken_links":
-                                           len(broken_resource_ids),
-                                       "resources_with_broken_links":
-                                           broken_resource_ids,
-                                       }
+                dataset_report_item = {
+                    "name": dataset["name"],
+                    "display_name": dataset.get("title") or dataset.get("name"),
+                    "num_broken_links": len(broken_resource_ids),
+                    "resources_with_broken_links": broken_resource_ids,
+                    }
                 organization_report_item["datasets_with_broken_links"].append(
                     dataset_report_item)
         organization_report_item["num_broken_links"] = num_broken_links

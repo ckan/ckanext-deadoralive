@@ -1,11 +1,16 @@
 {% if organizations %}
   <ul>
     {% for organization in organizations %}
+      {% set org_url = h.url_for(controller="organization", action="read", id=organization.name) %}
+      {% set org_image_url = organization.image_display_url or h.url_for_static('/base/images/placeholder-organization.png') %}
       <li>
-        {{ organization.name }} - {{organization.num_broken_links }} broken links:
+      <a href="{{ org_url }}"><img src="{{ org_image_url }}"></a>
+        <a href="{{ org_url }}">{{ organization.display_name }}</a> has {{organization.num_broken_links }} broken links:
         <ul>
-          {% for dataset in organization.datasets_with_broken_links %} 
-            <li>{{ dataset.name }} - {{ dataset.num_broken_links }} broken links</li>
+          {% for dataset in organization.datasets_with_broken_links %}
+            {% set url = h.url_for(controller="package", action="read",
+                                   id=dataset.name) %}
+            <li><a href="{{ url }}">{{ dataset.display_name }}</a> has {{ dataset.num_broken_links }} broken links</li>
           {% endfor %}
         </ul>
       </li>
