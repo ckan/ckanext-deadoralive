@@ -1,0 +1,8 @@
+{% ckan_extends %}
+
+{% block content_primary_nav %}
+  {{ super() }}
+  <li>
+    <a href="{{ h.url_for(controller='ckanext.deadoralive.controllers:BrokenLinksController', action='broken_links_by_email') }}">Broken links</a>
+  </li>
+{% endblock %}
