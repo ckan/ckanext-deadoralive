@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/seanh/ckanext-deadoralive.png)](https://travis-ci.org/seanh/ckanext-deadoralive) [![Coverage Status](https://img.shields.io/coveralls/seanh/ckanext-deadoralive.svg)](https://coveralls.io/r/seanh/ckanext-deadoralive?branch=master)
+[![Build Status](https://travis-ci.org/ckan/ckanext-deadoralive.png)](https://travis-ci.org/ckan/ckanext-deadoralive) [![Coverage Status](https://img.shields.io/coveralls/ckan/ckanext-deadoralive.svg)](https://coveralls.io/r/ckan/ckanext-deadoralive?branch=master)
 
 ckanext-deadoralive
 ===================
@@ -19,7 +19,7 @@ Installation
 1. For now, you can install the plugin directly from GitHub.
    Activate your CKAN virtualenv and then:
 
-        git clone https://github.com/seanh/ckanext-deadoralive.git
+        git clone https://github.com/ckan/ckanext-deadoralive.git
         cd ckanext-deadoralive
         python setup.py develop
         pip install -r requirements.txt
