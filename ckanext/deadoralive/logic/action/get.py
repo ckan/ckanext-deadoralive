@@ -262,8 +262,7 @@ def broken_links_by_email(context, data_dict):
     # Get a list of all the broken datasets on the site, each with a sub-list of
     # all its broken resources.
     broken_datasets = []
-    # FIXME: Does package search always return all the datasets here?
-    for dataset in _package_search(data_dict={}):
+    for dataset in _package_search(data_dict={'rows': 1000000}):
         broken_resources = []
         for resource in dataset.get('resources'):
             if _is_broken(result_dicts.get(resource["id"])):
