@@ -161,10 +161,12 @@ def _broken_links_by_organization(context, organization_list, all_results,
                     }
                 organization_report_item["datasets_with_broken_links"].append(
                     dataset_report_item)
-        organization_report_item["num_broken_links"] = num_broken_links
-        organization_report_item["datasets_with_broken_links"].sort(
-            key=lambda x: x["num_broken_links"], reverse=True)
-        report.append(organization_report_item)
+
+        if num_broken_links:
+            organization_report_item["num_broken_links"] = num_broken_links
+            organization_report_item["datasets_with_broken_links"].sort(
+                key=lambda x: x["num_broken_links"], reverse=True)
+            report.append(organization_report_item)
 
     report.sort(key=lambda x: x["num_broken_links"], reverse=True)
 

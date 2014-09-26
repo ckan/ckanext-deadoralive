@@ -56,7 +56,12 @@ class TestBrokenLinksByOrganization(custom_helpers.FunctionalTestBaseClass):
     def test_with_org_with_no_datasets(self):
 
         def organization_list(context=None, data_dict=None):
-            return ["test_org"]
+            return [{
+                "name": "test_org",
+                "image_display_url": "",
+                "description": "",
+                "packages": "",
+            }]
 
         def all_results():
             return []
@@ -67,15 +72,18 @@ class TestBrokenLinksByOrganization(custom_helpers.FunctionalTestBaseClass):
         report = get._broken_links_by_organization(
             None, organization_list, all_results, package_search)
 
-        assert report == [{"name": "test_org",
-                           "num_broken_links": 0,
-                           "datasets_with_broken_links": [],
-                           }]
+        assert report == [], ("Organizations with no broken datasets should "
+                              "not be listed in the report.")
 
     def test_with_dataset_with_no_resources(self):
 
         def organization_list(context=None, data_dict=None):
-            return ["test_org"]
+            return [{
+                "name": "test_org",
+                "image_display_url": "",
+                "description": "",
+                "packages": "",
+            }]
 
         def all_results():
             return []
@@ -90,15 +98,17 @@ class TestBrokenLinksByOrganization(custom_helpers.FunctionalTestBaseClass):
         report = get._broken_links_by_organization(
             None, organization_list, all_results, package_search)
 
-        assert report == [{"name": "test_org",
-                           "num_broken_links": 0,
-                           "datasets_with_broken_links": [],
-                           }]
+        assert report == []
 
     def test_organization_with_no_broken_links(self):
 
         def organization_list(context=None, data_dict=None):
-            return ["test_org"]
+            return [{
+                "name": "test_org",
+                "image_display_url": "",
+                "description": "",
+                "packages": "",
+            }]
 
         def all_results():
             now = datetime.datetime.now().isoformat()
@@ -142,10 +152,7 @@ class TestBrokenLinksByOrganization(custom_helpers.FunctionalTestBaseClass):
         report = get._broken_links_by_organization(
             None, organization_list, all_results, package_search)
 
-        assert report == [{"name": "test_org",
-                           "num_broken_links": 0,
-                           "datasets_with_broken_links": [],
-                           }]
+        assert report == []
 
     def test_mix_of_broken_and_working_links(self):
         user = factories.User()
