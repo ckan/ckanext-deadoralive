@@ -90,3 +90,9 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         assert dataset_3["name"] in response
         assert dataset_4["name"] in response
         assert dataset_5["name"] in response
+
+    def test_broken_links_by_email_not_authorized(self):
+        """Non-sysadmins should get redirected if they try to get the page."""
+        user = factories.User()
+        for extra_environ in (None, {'REMOTE_USER': str(user["name"])}):
+            self.app.get("/broken_links_by_email", status=302)

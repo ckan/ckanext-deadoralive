@@ -14,8 +14,11 @@ class BrokenLinksController(toolkit.BaseController):
 
     def broken_links_by_email(self):
 
-        report = toolkit.get_action(
-            "ckanext_deadoralive_broken_links_by_email")(data_dict={})
+        try:
+            report = toolkit.get_action(
+                "ckanext_deadoralive_broken_links_by_email")(data_dict={})
+        except toolkit.NotAuthorized:
+            toolkit.abort(401)
         extra_vars = {"report": report}
 
         return toolkit.render("broken_links_by_email.html",
