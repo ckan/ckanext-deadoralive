@@ -28,9 +28,9 @@ Installation
 
 3. Create a user account for the link checker to use.
 
-   Before you can run the link checker service, you need a CKAN user account
-   for the link checker service to use. I recommend creating a new user account
-   just for the link checker, rather than using an admin account, so the link
+   Before you can run the link checker service you need a CKAN user account
+   for it to use. I recommend creating a new user account
+   just for the link checker rather than using an admin account, so the link
    checker can run with as few privileges as possible.
 
    You can create a user account by registering a new account using CKAN's web
@@ -54,7 +54,7 @@ Installation
 
 5. Run the link checker service. With your CKAN virtualenv activated do:
 
-       python deadoralive.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
+        python deadoralive.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
 
    The `--apikey` option must be the API key of the
    `ckanext.deadoralive.authorized_users` setting that you added to your config
@@ -93,7 +93,7 @@ Creating Test Datasets
 
 To create some test datasets with working and broken links, do:
 
-  python create_test_resources.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
+    python create_test_resources.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
 
 By default the `deadoralive` plugin won't mark a resource as broken unless it
 has been broken for at least three consecutive link checks over a period of at
