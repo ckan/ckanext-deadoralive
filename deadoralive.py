@@ -12,6 +12,7 @@ installed will do.
 import sys
 import argparse
 import logging
+import socket
 
 import requests
 import requests.exceptions
@@ -203,9 +204,24 @@ def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("--url")
     parser.add_argument("--apikey")
+    parser.add_argument("--port", type=int, default=4723)
     parsed_args = parser.parse_args(args)
     client_site_url = parsed_args.url
     apikey = parsed_args.apikey
+    port = parsed_args.port
+
+    s = socket.socket()
+    try:
+        s.bind(('localhost', port))
+    except socket.error as err:
+        if err.errno == 98:
+            sys.exit(
+                "Port {port} is already in use.\n"
+                "Is there another instance of {process} already running?\n"
+                "To run multiple instances of {process} at once use the "
+                "--port <num> option.".format(port=port, process=sys.argv[0]))
+        else:
+            raise
 
     get_check_and_report(client_site_url, apikey, get_resources_to_check,
                          get_url_for_id, check_url, upsert_result)
