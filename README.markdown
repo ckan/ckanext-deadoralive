@@ -76,6 +76,29 @@ Installation and Usage
    want link checking to happen less often.
 
 
+Optional Config Settings
+------------------------
+
+In the `[app:main]` section of the CKAN config file:
+
+    # The minimum number of hours to wait before re-checking a resource
+    # (optional, default: 24).
+    ckanext.deadoralive.recheck_resources_after = 24
+
+    # The minimum number of hours to wait for a check result for a resource
+    # to come back before timing out and giving the resource out again to
+    # another link checker task (optional, default: 2).
+    ckanext.deadoralive.recheck_resources_after = 2
+
+    # The minimum number of times that checking a resource's link must fail
+    # consecutively before we mark that resource as broken in CKAN.
+    ckanext.deadoralive.broken_resource_min_fails = 3
+
+    # The minimum number of hours that a resource's link must be broken for
+    # before we mark that resource as broken in CKAN.
+    ckanext.deadoralive.broken_resource_min_hours = 36
+
+
 Running the Link Checker on a Different Machine
 -----------------------------------------------
 
@@ -135,29 +158,6 @@ giving each job a different port so that they can run simultaneously:
     @hourly deadoralive.py --url '<first_ckan_site>' --apikey <first_api_key> --port 4567
     @hourly deadoralive.py --url '<second_ckan_site>' --apikey <second_api_key> --port 4568
     @hourly deadoralive.py --url '<third_ckan_site>' --apikey <third_key> --port 4569
-
-
-Optional Config Settings
-------------------------
-
-In the `[app:main]` section of the CKAN config file:
-
-    # The minimum number of hours to wait before re-checking a resource
-    # (optional, default: 24).
-    ckanext.deadoralive.recheck_resources_after = 24
-
-    # The minimum number of hours to wait for a check result for a resource
-    # to come back before timing out and giving the resource out again to
-    # another link checker task (optional, default: 2).
-    ckanext.deadoralive.recheck_resources_after = 2
-
-    # The minimum number of times that checking a resource's link must fail
-    # consecutively before we mark that resource as broken in CKAN.
-    ckanext.deadoralive.broken_resource_min_fails = 3
-
-    # The minimum number of hours that a resource's link must be broken for
-    # before we mark that resource as broken in CKAN.
-    ckanext.deadoralive.broken_resource_min_hours = 36
 
 
 Creating Test Datasets
