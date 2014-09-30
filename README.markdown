@@ -87,6 +87,56 @@ different server or from your laptop: just clone the repo and run
 `deadoralive.py` as described above.
 
 
+Running Multiple Link Checkers at Once
+--------------------------------------
+
+It's perfectly fine to run multiple instances of the `deadoralive.py` link
+checker script at once. For example:
+
+* Have a cron job setup on the server to run the link checker hourly, but
+  occassionally run another copy of the link checker manually on your laptop.
+
+* Have multiple cron jobs on multiple servers running link checkers against
+  the same CKAN site.
+
+CKAN will hand out different resources to each link checker, and won't let two
+checkers check the same resource at the same time.
+
+
+### Running Multiple Link Checkers on the Same Machine
+
+By default `deadoralive.py` uses a socket to prevent two instances of the
+script from running at the same time on the same machine. This is to prevent
+link checker processes from piling up when the link checker is being run as a
+cron job and doesn't finish checking all the links before cron runs it again.
+
+If you _want_ to run multiple instances on the same machine at the same time,
+just use the `--port` option to specify a different port for each.
+For example:
+
+    deadoralive.py --url '<url>' --apikey <apikey> --port 4567
+    deadoralive.py --url '<url>' --apikey <apikey> --port 4568
+    deadoralive.py --url '<url>' --apikey <apikey> --port 4569
+
+(`deadoralive.py` doesn't actually do anything with the port, it just binds a
+socket to it to prevent any other `deadoralive.py` processes with the same port
+from running.)
+
+
+Checking Multiple CKAN Sites
+----------------------------
+
+You can use a single instance of the link checker to check multiple CKAN sites:
+just pass it different `--url` and `--apikey` arguments.
+
+For example you might setup three cron jobs to check three different sites,
+giving each job a different port so that they can run simultaneously:
+
+    @hourly deadoralive.py --url '<first_ckan_site>' --apikey <first_api_key> --port 4567
+    @hourly deadoralive.py --url '<second_ckan_site>' --apikey <second_api_key> --port 4568
+    @hourly deadoralive.py --url '<third_ckan_site>' --apikey <third_key> --port 4569
+
+
 Optional Config Settings
 ------------------------
 
