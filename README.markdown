@@ -208,12 +208,6 @@ broken as soon as they've been checked and found broken three times in a row,
 regardless of the period of time the checks happened over.
 
 
-Theory of Operation
--------------------
-
-TODO.
-
-
 Running the Tests
 -----------------
 
