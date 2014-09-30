@@ -64,16 +64,16 @@ Installation and Usage
    it. On most UNIX systems you can add a cron job by running ``crontab -e`` to
    edit your crontab file. Assuming you have CKAN and ckanext-deadoralive
    installed in the default locations, add a line like the following to the
-   file and save it::
+   file and save it:
 
         @hourly /usr/lib/ckan/default/bin/python /usr/lib/ckan/default/src/ckanext-deadoralive/deadoralive.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
 
-    As before, replace ``http://your.ckan.site.com`` with the URL of the CKAN
-    site you want to check and ``<your_api_key>`` with the API key of the CKAN
-    user that you want the link checker to run as.
+   As before, replace `http://your.ckan.site.com` with the URL of the CKAN
+   site you want to check and `<your_api_key>` with the API key of the CKAN
+   user that you want the link checker to run as.
 
-    You can also use ``@daily`` or ``@weekly`` instead of ``@hourly`` if you
-    want link checking to happen less often.
+   You can also use `@daily` or `@weekly` instead of `@hourly` if you
+   want link checking to happen less often.
 
 
 Running the Link Checker on a Different Machine
