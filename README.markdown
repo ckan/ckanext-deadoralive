@@ -3,8 +3,32 @@
 ckanext-deadoralive
 ===================
 
-A dead links checker plugin for CKAN: checks your CKAN site's resource URLs
-for dead links.
+Dead or Alive is a dead link checker plugin for CKAN: it checks your CKAN
+site's resource URLs for broken links and provides broken link report pages.
+
+Dead or Alive comes in two parts:
+
+1. A CKAN API script that checks whether links are broken and posts the results
+   back to CKAN.
+
+2. A CKAN plugin that receives link checker results from the script, saves them
+   in CKAN's database, and adds reports about the results to CKAN's API and web
+   interface.
+
+In the future, we'd like to:
+
+* Make the link checker non-CKAN specific, so it can be used to check non-CKAN
+  sites (that support its API) as well.
+  See <https://github.com/ckan/ckanext-deadoralive/issues/1>.
+
+* Make the link checker into a web service, rather than just a cron job.
+  This will enable _ad-hoc_ link checking in response to user interactions
+  (i.e. the user clicks on a "check this link/these links now" button, or
+  checking a new resource as soon as a user creates it) as well as the
+  currently implemented automatic hourly checks.
+  See <https://github.com/ckan/ckanext-deadoralive/issues/15>.
+
+TODO: Insert screenshots and API docs for the reports.
 
 
 Requirements
