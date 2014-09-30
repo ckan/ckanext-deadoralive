@@ -13,8 +13,8 @@ Requirements
 Tested with CKAN 2.2 and Python 2.7. Python 2.6 is not supported!
 
 
-Installation
-------------
+Installation and Usage
+----------------------
 
 1. For now, you can install the plugin directly from GitHub.
    Activate your CKAN virtualenv and then:
@@ -60,9 +60,31 @@ Installation
    `ckanext.deadoralive.authorized_users` setting that you added to your config
    file (see above).
 
-   To setup the link checker to run automatically:
+   To setup the link checker to run automatically you can add a cron job for
+   it. On most UNIX systems you can add a cron job by running ``crontab -e`` to
+   edit your crontab file. Assuming you have CKAN and ckanext-deadoralive
+   installed in the default locations, add a line like the following to the
+   file and save it::
 
-        # TODO
+        @hourly /usr/lib/ckan/default/bin/python /usr/lib/ckan/default/src/ckanext-deadoralive/deadoralive.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
+
+    As before, replace ``http://your.ckan.site.com`` with the URL of the CKAN
+    site you want to check and ``<your_api_key>`` with the API key of the CKAN
+    user that you want the link checker to run as.
+
+    You can also use ``@daily`` or ``@weekly`` instead of ``@hourly`` if you
+    want link checking to happen less often.
+
+
+Running the Link Checker on a Different Machine
+-----------------------------------------------
+
+Although the ckanext-deadoralive extension has to be installed and activated on
+the CKAN site that you want to check the links of, the link checker script
+itself does not need to be run from the same machine. Because it does all
+communication with the CKAN site via CKAN's API, you can run it from a
+different server or from your laptop: just clone the repo and run
+`deadoralive.py` as described above.
 
 
 Optional Config Settings
