@@ -31,7 +31,10 @@ class BrokenLinksController(toolkit.BaseController):
         if data_dict is None:
             data_dict = dict(toolkit.request.params)
         action_function = toolkit.get_action(action)
-        result = action_function(context, data_dict)
+        try:
+            result = action_function(context, data_dict)
+        except toolkit.NotAuthorized:
+            toolkit.abort(403)
         toolkit.response.headers['Content-Type'] = 'application/json'
         if key:
             result = result[key]
