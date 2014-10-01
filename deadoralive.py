@@ -24,15 +24,10 @@ def get_resources_to_check(client_site_url, apikey):
     Calls the client site's API to get a list of resource IDs.
 
     """
-    # This is currently implemented using ckanapi, but if we want to make this
-    # code non-CKAN specific in the future we'll have to reimplement this using
-    # e.g. requests directly. (We also might have to change the apikey param
-    # which is CKAN-specific.)
-    import ckanapi
-    ckan = ckanapi.RemoteCKAN(client_site_url, apikey=apikey)
     # TODO: Handle exceptions and unexpected results.
-    response = ckan.action.ckanext_deadoralive_get_resources_to_check()
-    return response
+    url = client_site_url + "deadoralive/get_resources_to_check"
+    response = requests.get(url, headers=dict(Authorization=apikey))
+    return response.json()
 
 
 class CouldNotGetURLError(Exception):
@@ -48,18 +43,12 @@ def get_url_for_id(client_site_url, apikey, resource_id):
     :raises CouldNotGetURLError: if getting the URL fails for any reason
 
     """
-    # This is currently implemented using ckanapi, but if we want to make this
-    # code non-CKAN specific in the future we'll have to reimplement this using
-    # e.g. requests directly. (We also might have to change the apikey param
-    # which is CKAN-specific.)
-    import ckanapi
-    ckan = ckanapi.RemoteCKAN(client_site_url, apikey=apikey)
-    try:
-        response = ckan.action.resource_show(id=resource_id)
-    except ckanapi.NotAuthorized:
-        raise CouldNotGetURLError
     # TODO: Handle invalid responses from the client site.
-    return response["url"]
+    url = client_site_url + "deadoralive/get_url_for_resource_id"
+    params = {"resource_id": resource_id}
+    response = requests.get(url, headers=dict(Authorization=apikey),
+                            params=params)
+    return response.json()
 
 
 def check_url(url):
@@ -110,14 +99,11 @@ def check_url(url):
 def upsert_result(client_site_url, apikey, resource_id, result):
     """Post the given link check result to the client site."""
 
-    # This is currently implemented using ckanapi, but if we want to make this
-    # code non-CKAN specific in the future we'll have to reimplement this using
-    # e.g. requests directly. (We also might have to change the apikey param
-    # which is CKAN-specific.)
-    import ckanapi
-    ckan = ckanapi.RemoteCKAN(client_site_url, apikey=apikey)
     # TODO: Handle exceptions and unexpected results.
-    ckan.action.ckanext_deadoralive_upsert(resource_id=resource_id, **result)
+    url = client_site_url + "deadoralive/upsert"
+    params = result.copy()
+    params["resource_id"] = resource_id
+    requests.post(url, headers=dict(Authorization=apikey), params=params)
 
 
 def _get_logger():
@@ -207,6 +193,8 @@ def main(args):
     parser.add_argument("--port", type=int, default=4723)
     parsed_args = parser.parse_args(args)
     client_site_url = parsed_args.url
+    if not client_site_url.endswith("/"):
+        client_site_url = client_site_url + "/"
     apikey = parsed_args.apikey
     port = parsed_args.port
 

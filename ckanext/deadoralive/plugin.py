@@ -82,6 +82,22 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
         map_.connect("/broken_links_by_email",
                      controller="ckanext.deadoralive.controllers:BrokenLinksController",
                      action="broken_links_by_email")
+
+        # Make some of this plugin's custom action functions also available at
+        # custom URLs. This is to support deadoralive's non-CKAN specific API.
+        map_.connect(
+            "/deadoralive/get_resources_to_check",
+            controller="ckanext.deadoralive.controllers:BrokenLinksController",
+            action="get_resources_to_check")
+        map_.connect(
+            "/deadoralive/get_url_for_resource_id",
+            controller="ckanext.deadoralive.controllers:BrokenLinksController",
+            action="get_resource_id_for_url")
+        map_.connect(
+            "/deadoralive/upsert",
+            controller="ckanext.deadoralive.controllers:BrokenLinksController",
+            action="upsert")
+
         return map_
 
     # IAuthFunctions

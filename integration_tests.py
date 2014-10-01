@@ -110,19 +110,19 @@ class TestIntegration(custom_helpers.FunctionalTestBaseClass):
         # and forward all requests on to the test app, but I don't think
         # httpretty supports this.
         get_resource_ids_url = (
-            ckan_url + "/api/action/ckanext_deadoralive_get_resources_to_check")
+            ckan_url + "/deadoralive/get_resources_to_check")
         httpretty.register_uri(httpretty.GET, get_resource_ids_url,
                                body=self._forward_to_test_app)
         httpretty.register_uri(httpretty.POST, get_resource_ids_url,
                                body=self._forward_to_test_app)
 
-        get_url_for_id_url = ckan_url + "/api/action/resource_show"
+        get_url_for_id_url = ckan_url + "/deadoralive/get_url_for_resource_id"
         httpretty.register_uri(httpretty.GET, get_url_for_id_url,
                                body=self._forward_to_test_app)
         httpretty.register_uri(httpretty.POST, get_url_for_id_url,
                                body=self._forward_to_test_app)
 
-        upsert_result_url = ckan_url + "/api/action/ckanext_deadoralive_upsert"
+        upsert_result_url = ckan_url + "/deadoralive/upsert"
         httpretty.register_uri(httpretty.GET, upsert_result_url,
                                body=self._forward_to_test_app)
         httpretty.register_uri(httpretty.POST, upsert_result_url,
