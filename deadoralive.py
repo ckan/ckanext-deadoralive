@@ -18,15 +18,26 @@ import requests
 import requests.exceptions
 
 
+class CouldNotGetResourceIDsError(Exception):
+    """Raised if getting the resource IDs to check fails."""
+    pass
+
+
 def get_resources_to_check(client_site_url, apikey):
     """Return a list of resource IDs to check for broken links.
 
     Calls the client site's API to get a list of resource IDs.
 
+    :raises CouldNotGetResourceIDsError: if getting the resource IDs fails
+        for any reason
+
     """
-    # TODO: Handle exceptions and unexpected results.
     url = client_site_url + "deadoralive/get_resources_to_check"
     response = requests.get(url, headers=dict(Authorization=apikey))
+    if not response.ok:
+        raise CouldNotGetResourceIDsError(
+            "Couldn't get resource IDs to check: {code} {reason}".format(
+                code=response.status_code, reason=response.reason))
     return response.json()
 
 
@@ -48,6 +59,12 @@ def get_url_for_id(client_site_url, apikey, resource_id):
     params = {"resource_id": resource_id}
     response = requests.get(url, headers=dict(Authorization=apikey),
                             params=params)
+    if not response.ok:
+        raise CouldNotGetURLError(
+            "Couldn't get URL for resource {id}: {code} {reason}".format(
+                id=resource_id, code=response.status_code,
+                reason=response.reason))
+
     return response.json()
 
 
