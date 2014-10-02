@@ -3,32 +3,12 @@
 ckanext-deadoralive
 ===================
 
-Dead or Alive is a dead link checker plugin for CKAN: it checks your CKAN
-site's resource URLs for broken links and provides broken link report pages.
+ckanext-deadoralive is a CKAN extension for the [Dead or Alive](https://github.com/ckan/deadoralive)
+link checker service. It enables a CKAN site to be checked by the link checker,
+handles saving the results posted by the link checker in CKAN's database
+and adds various broken link reports to the CKAN site.
 
-Dead or Alive comes in two parts:
-
-1. A CKAN API script that checks whether links are broken and posts the results
-   back to CKAN.
-
-2. A CKAN plugin that receives link checker results from the script, saves them
-   in CKAN's database, and adds reports about the results to CKAN's API and web
-   interface.
-
-In the future, we'd like to:
-
-* Make the link checker non-CKAN specific, so it can be used to check non-CKAN
-  sites (that support its API) as well.
-  See <https://github.com/ckan/ckanext-deadoralive/issues/1>.
-
-* Make the link checker into a web service, rather than just a cron job.
-  This will enable _ad-hoc_ link checking in response to user interactions
-  (i.e. the user clicks on a "check this link/these links now" button, or
-  checking a new resource as soon as a user creates it) as well as the
-  currently implemented automatic hourly checks.
-  See <https://github.com/ckan/ckanext-deadoralive/issues/15>.
-
-TODO: Insert screenshots and API docs for the reports.
+TODO: Screenshots of the reports.
 
 
 Requirements
@@ -46,7 +26,6 @@ Installation and Usage
         git clone https://github.com/ckan/ckanext-deadoralive.git
         cd ckanext-deadoralive
         python setup.py develop
-        pip install -r requirements.txt
 
 2. Add `deadoralive` to the `ckan.plugins` setting in your CKAN config file.
 
@@ -76,28 +55,10 @@ Installation and Usage
    the broken link report pages appear on your site. At first they will report
    no broken links - because you haven't checked the site for broken links yet.
 
-5. Run the link checker service. With your CKAN virtualenv activated do:
-
-        python deadoralive.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
-
-   The `--apikey` option must be the API key of the
-   `ckanext.deadoralive.authorized_users` setting that you added to your config
-   file (see above).
-
-   To setup the link checker to run automatically you can add a cron job for
-   it. On most UNIX systems you can add a cron job by running ``crontab -e`` to
-   edit your crontab file. Assuming you have CKAN and ckanext-deadoralive
-   installed in the default locations, add a line like the following to the
-   file and save it:
-
-        @hourly /usr/lib/ckan/default/bin/python /usr/lib/ckan/default/src/ckanext-deadoralive/deadoralive.py --url 'http://your.ckan.site.com' --apikey <your_api_key>
-
-   As before, replace `http://your.ckan.site.com` with the URL of the CKAN
-   site you want to check and `<your_api_key>` with the API key of the CKAN
-   user that you want the link checker to run as.
-
-   You can also use `@daily` or `@weekly` instead of `@hourly` if you
-   want link checking to happen less often.
+Now go over to [Dead or Alive](https://github.com/ckan/deadoralive) and install
+and run the link checker (either on the same machine where CKAN is installed or
+on a different machine - it doesn't matter) and you'll start to see broken link
+reports appear on your site.
 
 
 Optional Config Settings
@@ -123,69 +84,18 @@ In the `[app:main]` section of the CKAN config file:
     ckanext.deadoralive.broken_resource_min_hours = 36
 
 
-Running the Link Checker on a Different Machine
------------------------------------------------
+Development
+-----------
 
-Although the ckanext-deadoralive extension has to be installed and activated on
-the CKAN site that you want to check the links of, the link checker script
-itself does not need to be run from the same machine. Because it does all
-communication with the CKAN site via CKAN's API, you can run it from a
-different server or from your laptop: just clone the repo and run
-`deadoralive.py` as described above.
+To install the plugin for development, activate your CKAN virtualenv and do:
 
-
-Running Multiple Link Checkers at Once
---------------------------------------
-
-It's perfectly fine to run multiple instances of the `deadoralive.py` link
-checker script at once. For example:
-
-* Have a cron job setup on the server to run the link checker hourly, but
-  occassionally run another copy of the link checker manually on your laptop.
-
-* Have multiple cron jobs on multiple servers running link checkers against
-  the same CKAN site.
-
-CKAN will hand out different resources to each link checker, and won't let two
-checkers check the same resource at the same time.
+        git clone https://github.com/ckan/ckanext-deadoralive.git
+        cd ckanext-deadoralive
+        python setup.py develop
+        pip install -r dev-requirements.txt
 
 
-### Running Multiple Link Checkers on the Same Machine
-
-By default `deadoralive.py` uses a socket to prevent two instances of the
-script from running at the same time on the same machine. This is to prevent
-link checker processes from piling up when the link checker is being run as a
-cron job and doesn't finish checking all the links before cron runs it again.
-
-If you _want_ to run multiple instances on the same machine at the same time,
-just use the `--port` option to specify a different port for each.
-For example:
-
-    deadoralive.py --url '<url>' --apikey <apikey> --port 4567
-    deadoralive.py --url '<url>' --apikey <apikey> --port 4568
-    deadoralive.py --url '<url>' --apikey <apikey> --port 4569
-
-(`deadoralive.py` doesn't actually do anything with the port, it just binds a
-socket to it to prevent any other `deadoralive.py` processes with the same port
-from running.)
-
-
-Checking Multiple CKAN Sites
-----------------------------
-
-You can use a single instance of the link checker to check multiple CKAN sites:
-just pass it different `--url` and `--apikey` arguments.
-
-For example you might setup three cron jobs to check three different sites,
-giving each job a different port so that they can run simultaneously:
-
-    @hourly deadoralive.py --url '<first_ckan_site>' --apikey <first_api_key> --port 4567
-    @hourly deadoralive.py --url '<second_ckan_site>' --apikey <second_api_key> --port 4568
-    @hourly deadoralive.py --url '<third_ckan_site>' --apikey <third_key> --port 4569
-
-
-Creating Test Datasets
-----------------------
+### Creating Test Datasets
 
 To create some test datasets with working and broken links, do:
 
@@ -208,8 +118,7 @@ broken as soon as they've been checked and found broken three times in a row,
 regardless of the period of time the checks happened over.
 
 
-Running the Tests
------------------
+### Running the Tests
 
 Note that you should have the `release-v2.2` branch of CKAN checked out when
 you run these tests. The `ckanext-deadoralive` `master` branch is currently
