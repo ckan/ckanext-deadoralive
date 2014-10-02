@@ -1,0 +1,9 @@
+{
+  "name": "ckanext-deadoralive",
+  "version": "0.0.0",
+  "private": true,
+  "license": "proprietary",
+  "dependencies": {
+    "bootstrap": "2.3.x"
+  }
+}

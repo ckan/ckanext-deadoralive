@@ -1,21 +1,45 @@
-{% if organizations %}
-  <ul>
-    {% for organization in organizations %}
-      {% set org_url = h.url_for(controller="organization", action="read", id=organization.name) %}
-      {% set org_image_url = organization.image_display_url or h.url_for_static('/base/images/placeholder-organization.png') %}
-      <li>
-      <a href="{{ org_url }}"><img src="{{ org_image_url }}"></a>
-        <a href="{{ org_url }}">{{ organization.display_name }}</a> has {{organization.num_broken_links }} broken links:
-        <ul>
-          {% for dataset in organization.datasets_with_broken_links %}
-            {% set url = h.url_for(controller="package", action="read",
-                                   id=dataset.name) %}
-            <li><a href="{{ url }}">{{ dataset.display_name }}</a> has {{ dataset.num_broken_links }} broken links</li>
+{% extends "organization/index.html" %}
+
+{% block styles %}
+  {{ super() }}
+  {% resource "deadoralive/styles/master.css" %}
+{% endblock %}
+
+{% block subtitle %}{{ _("Broken Links") }}{% endblock %}
+
+{% block breadcrumb_content %}
+  <li>{% link_for _('Organizations'), controller='organization', action='index' %}</li>
+  <li class="active"><a href="#">{{ _("Broken Links") }}</a></li>
+{% endblock %}
+
+{% block primary %}
+  <article class="module">
+    <div class="module-content">
+      <h1>{{ _("Organizations with broken links") }}</h1>
+      {% if organizations %}
+        <ul class="broken-links-list with-images unstyled">
+          {% for organization in organizations %}
+            {% set org_url = h.url_for(controller="organization", action="read", id=organization.name) %}
+            {% set org_image_url = organization.image_display_url or h.url_for_static('/base/images/placeholder-organization.png') %}
+            <li class="item">
+              <h3><a href="{{ org_url }}">{{ organization.display_name }}</a></h3>
+              <img src="{{ org_image_url }}" class="image" width="100">
+              <p>{{ _("{0} has {1} broken links:").format(organization.display_name, organization.num_broken_links) }}</p>
+              <ul>
+                {% for dataset in organization.datasets_with_broken_links %}
+                  {% set url = h.url_for(controller="package", action="read",
+                                         id=dataset.name) %}
+                  <li><a href="{{ url }}">{{ dataset.display_name }}</a> has {{ dataset.num_broken_links }} broken links</li>
+                {% endfor %}
+              </ul>
+            </li>
           {% endfor %}
         </ul>
-      </li>
-    {% endfor %}
-  </ul>
-{% else %}
-  This site has no broken links! :)
-{% endif %}
+      {% else %}
+        <p>{{ _("This site has no broken links") }}</p>
+      {% endif %}
+    </div>
+  </article>
+{% endblock %}
+
+{% block secondary %}{% endblock %}

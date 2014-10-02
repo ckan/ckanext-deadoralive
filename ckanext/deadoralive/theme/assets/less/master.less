@@ -1,0 +1,30 @@
+@import "../../bower_components/bootstrap/less/variables.less";
+@import "../../bower_components/bootstrap/less/mixins.less";
+
+@unit: 20px;
+@image-size: 100px;
+
+.broken-links-list {
+  .item {
+    position: relative;
+    margin: 0 0 @unit 0;
+    padding-bottom: @unit;
+    border-bottom: 1px solid @grayLighter;
+    ul {
+      margin-bottom: @unit / 2;
+    }
+    &:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom-width: 0;
+    }
+  }
+  &.with-images .item {
+    padding-left: @image-size + @unit;
+    .image {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  }
+}

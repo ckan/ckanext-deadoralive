@@ -51,6 +51,7 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
 
     def update_config(self, config_):
         toolkit.add_template_directory(config_, 'templates')
+        toolkit.add_resource('theme/resources', 'deadoralive')
 
     # IActions
 
@@ -76,12 +77,15 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
     # IRoutes
 
     def before_map(self, map_):
-        map_.connect("/broken_links",
+        map_.connect("deadoralive_broken_links_by_organization",
+                     "/organization/broken_links",
                      controller="ckanext.deadoralive.controllers:BrokenLinksController",
                      action="broken_links_by_organization")
-        map_.connect("/broken_links_by_email",
+        map_.connect("deadoralive_broken_links_by_email",
+                     "/ckan-admin/broken_links",
                      controller="ckanext.deadoralive.controllers:BrokenLinksController",
-                     action="broken_links_by_email")
+                     action="broken_links_by_email",
+                     ckan_icon="link")
 
         # Make some of this plugin's custom action functions also available at
         # custom URLs. This is to support deadoralive's non-CKAN specific API.

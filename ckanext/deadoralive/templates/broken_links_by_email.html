@@ -1,18 +1,51 @@
-{% if report %}
-  <ul>
-    {% for item in report %}
-      <li>
-        <a href="{{ item.mailto }}">
-          {{ item.email }} - {{ item.num_broken_links }} broken links:
-        </a>
-        <ul>
-          {% for dataset in item.datasets_with_broken_links %}
-            <li><a href="{{ h.url_for(controller="package", action="read", id=dataset.name) }}">{{ dataset.title }}</a> - {{ dataset.num_broken_links }} broken links</li>
-          {% endfor %}
-        </ul>
-      </li>
-    {% endfor %}
-  </ul>
-{% else %}
-  This site has no broken links! :)
-{% endif %}
+{% extends "admin/base.html" %}
+
+{% block styles %}
+  {{ super() }}
+  {% resource "deadoralive/styles/master.css" %}
+{% endblock %}
+
+{% block subtitle %}{{ _("Broken Links") }}{% endblock %}
+
+{% block primary_content_inner %}
+  {% if report %}
+    <ul class="broken-links-list unstyled">
+      {% for item in report %}
+        <li class="item">
+          <h3>{{ item.email }}</h3>
+          <p>{{ _("{0} broken links").format(item.num_broken_links) }}</p>
+          <ul>
+            {% for dataset in item.datasets_with_broken_links %}
+              <li>
+                <a href="{{ h.url_for(controller="package", action="read", id=dataset.name) }}">{{ dataset.title }}</a>:
+                {{ _("{0} broken links").format(dataset.num_broken_links) }}
+              </li>
+            {% endfor %}
+          </ul>
+          <p>
+            <a href="{{ item.mailto }}" class="btn">
+              <i class="icon-envelope"></i>
+              {{ _("Email maintainer") }}
+            </a>
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>{{ _("This site has no broken links") }}</p>
+  {% endif %}
+{% endblock %}
+
+{% block secondary_content %}
+  <div class="module module-narrow module-shallow">
+    <h2 class="module-heading">
+      <i class="icon-info-sign"></i>
+      {{ _('Broken links') }}
+    </h2>
+    <div class="module-content">
+      {% trans %}
+        <p>These are the maintainers of datasets that have resources which have broken links within them.</p>
+      {% endtrans %}
+    </div>
+  </div>
+{% endblock %}

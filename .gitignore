@@ -1,4 +1,7 @@
 .ropeproject/*
 ckanext_deadoralive.egg-info/*
 *.pyc
+
 dist/*
+node_modules
+bower_components
