@@ -20,12 +20,9 @@ Tested with CKAN 2.2 and Python 2.7. Python 2.6 is not supported!
 Installation and Usage
 ----------------------
 
-1. For now, you can install the plugin directly from GitHub.
-   Activate your CKAN virtualenv and then:
+1. Activate your CKAN virtualenv and then:
 
-        git clone https://github.com/ckan/ckanext-deadoralive.git
-        cd ckanext-deadoralive
-        python setup.py develop
+        pip install ckanext-deadoralive
 
 2. Add `deadoralive` to the `ckan.plugins` setting in your CKAN config file.
 

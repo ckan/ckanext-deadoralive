@@ -1,3 +1,4 @@
 .ropeproject/*
 ckanext_deadoralive.egg-info/*
 *.pyc
+dist/*
