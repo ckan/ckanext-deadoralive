@@ -3,10 +3,10 @@
 ckanext-deadoralive
 ===================
 
-ckanext-deadoralive is a CKAN extension for the [Dead or Alive](https://github.com/ckan/deadoralive)
-link checker service. It enables a CKAN site to be checked by the link checker,
-handles saving the results posted by the link checker in CKAN's database
-and adds various broken link reports to the CKAN site.
+ckanext-deadoralive is a CKAN extension for the [Dead or Alive link checker service](https://github.com/ckan/deadoralive)
+It provides the API that enables a CKAN site to be checked by the link checker,
+handles saving the results posted by the link checker in CKAN's database and
+adds various broken link reports to the CKAN site.
 
 TODO: Screenshots of the reports.
 
@@ -55,10 +55,12 @@ Installation and Usage
    the broken link report pages appear on your site. At first they will report
    no broken links - because you haven't checked the site for broken links yet.
 
-Now go over to [Dead or Alive](https://github.com/ckan/deadoralive) and install
-and run the link checker (either on the same machine where CKAN is installed or
-on a different machine - it doesn't matter) and you'll start to see broken link
-reports appear on your site.
+5. Now go over to [Dead or Alive](https://github.com/ckan/deadoralive) and
+   install the link checker (either on the same machine where CKAN is installed
+   or on a different machine - it doesn't matter). The API key that you
+   configure the link checker with should be the API key of the user you
+   created in step 3 above. Run the link checker against your CKAN site and
+   you'll start to see broken link reports appear on the site.
 
 
 Optional Config Settings
