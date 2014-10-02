@@ -4,6 +4,6 @@
   {{ super() }}
   {% set link_checker_result = h.ckanext_deadoralive_get(res.id) %}
   {% if link_checker_result.broken %}
-    (!) Broken
+    <span class="text-error"><i class="icon-warning-sign"></i> {{ _("Broken") }}</span>
   {% endif %}
 {% endblock %}
