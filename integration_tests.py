@@ -19,7 +19,7 @@ import ckanext.deadoralive.tests.helpers as custom_helpers
 import ckanext.deadoralive.model.results as results
 import pylons.config as config
 
-import deadoralive
+import deadoralive.deadoralive
 
 
 class TestIntegration(custom_helpers.FunctionalTestBaseClass):
@@ -137,7 +137,7 @@ class TestIntegration(custom_helpers.FunctionalTestBaseClass):
         # CKAN.  get each resource's URL from CKAN, test each URL, and then post
         # the test results back to CKAN.
         before = datetime.datetime.utcnow()
-        deadoralive.main("--url {0} --apikey {1}".format(
+        deadoralive.deadoralive.main("--url {0} --apikey {1}".format(
             ckan_url, user["apikey"]).split())
         after = datetime.datetime.utcnow()
 
