@@ -1,6 +1,6 @@
 {% ckan_extends %}
 
-{% block resource_additional_information_inner %}
+{% block resource_additional_information %}
   {% snippet 'snippets/deadoralive_resource_result.html',
              resource_id=c.resource.id %}
   {{ super() }}

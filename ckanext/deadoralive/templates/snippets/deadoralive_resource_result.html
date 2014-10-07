@@ -1,0 +1,51 @@
+{% set link_checker_result = h.ckanext_deadoralive_get(resource_id) %}
+{# Important! Don't show results if link_checker_result.alive is None,
+    that just means we have a pending result but not an actual result yet. #}
+{% if link_checker_result and link_checker_result.broken != None %}
+
+  <section class="module">
+    <div class="module-content">
+      {% if link_checker_result.broken %}
+        <div class="alert alert-error">
+          <h4>
+            <i class="icon-warning-sign"></i>
+            {{ _("This resource link is broken") }}
+          </h4>
+          <p>
+            {{ _("This resource link was broken when we last checked it on {0}:").format(h.render_datetime(link_checker_result.last_checked)) }}
+          </p>
+          <ul>
+            <li>{{ _("The file could not be downloaded.") }}</li>
+            {% if link_checker_result.status or link_checker_result.reason %}
+              <li>{{ _("The server returned an error: {0} {1} {1}.").format(link_checker_result.status, link_checker_result.reason) }}</li>
+            {% endif %}
+            <li>
+              {# Comment - this assumes that links won't be marked as broken
+                  unless they've been broken for multiple consecutive checks,
+                  so we assume that "{{ num_fails }} checks" is plural here. #}
+              {{ _("The link has been broken for the last {0} times that we've checked it.").format(link_checker_result.num_fails) }}
+            </li>
+            {% if link_checker_result.last_successful %}
+              <li>
+                {{ _("The link was last working when we checked it on {0}").format(h.render_datetime(link_checker_result.last_successful)) }}
+              </li>
+            {% endif %}
+          </ul>
+          <p>
+            {% set url = h.url_for(controller='ckanext.deadoralive.controllers:BrokenLinksController', action='broken_links_by_organization') %}
+            <a class="btn" href="{{ url }}">
+              {{ _("View a report of all broken resource links on this site") }}
+            </a>
+          </p>
+        </div>
+      {% else %}
+        <div class="alert alert-info">
+          <i class="icon-thumbs-up"></i>
+          {{ _("This resource link is working") }}
+          &middot; {{ _("Last checked on") }}
+          {{ h.render_datetime(link_checker_result.last_successful) }}.
+        </div>
+      {% endif %}
+    </div>
+  </section>
+{% endif %}

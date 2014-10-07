@@ -53,6 +53,10 @@ class DeadOrAlivePlugin(plugins.SingletonPlugin):
         toolkit.add_template_directory(config_, 'templates')
         toolkit.add_resource('theme/resources', 'deadoralive')
 
+        if toolkit.check_ckan_version(max_version='2.2.999'):
+            # Add CKAN version 2.2 support templates.
+            toolkit.add_template_directory(config_, '2.2_templates')
+
     # IActions
 
     def get_actions(self):
