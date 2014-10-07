@@ -1,1 +1,2 @@
 include README.markdown
+recursive-include ckanext/deadoralive *.html *.json *.js *.less *.css

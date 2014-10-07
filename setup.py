@@ -14,7 +14,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version='0.1.0',
+    version='0.1.4',
 
     description='A CKAN extension for the Dead or Alive link checker service',
     long_description=long_description,
@@ -65,8 +65,8 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
+    include_package_data=True,
     package_data={
-        '': ['**/*.html',],
     },
 
     # Although 'package_data' is the preferred approach, in some case you may

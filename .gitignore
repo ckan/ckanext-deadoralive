@@ -3,5 +3,6 @@ ckanext_deadoralive.egg-info/*
 *.pyc
 
 dist/*
+build/*
 node_modules
 bower_components
