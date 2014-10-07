@@ -35,7 +35,7 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
                                    user=user)
         custom_helpers.make_working((resource_2, resource_8), user=user)
 
-        response = self.app.get("/broken_links")
+        response = self.app.get("/organization/broken_links")
 
         assert org_1["name"] in response
         assert org_2["name"] in response
@@ -47,7 +47,7 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         assert dataset_5["name"] in response
 
     def test_broken_links_by_organization_when_no_broken_links(self):
-        response = self.app.get("/broken_links")
+        response = self.app.get("/organization/broken_links")
         assert "This site has no broken links" in response
 
     def test_broken_links_by_email(self):
@@ -83,7 +83,7 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
                                    user=sysadmin)
         custom_helpers.make_working((resource_2, resource_8), user=sysadmin)
 
-        response = self.app.get("/broken_links_by_email",
+        response = self.app.get("/ckan-admin/broken_links",
                                 extra_environ=extra_environ)
 
         assert maintainer_1 in response
@@ -99,13 +99,13 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
         """Non-sysadmins should get redirected if they try to get the page."""
         user = factories.User()
         for extra_environ in (None, {'REMOTE_USER': str(user["name"])}):
-            self.app.get("/broken_links_by_email", status=302)
+            self.app.get("/ckan-admin/broken_links", status=302)
 
     def test_broken_links_by_email_when_no_broken_links(self):
         sysadmin = custom_factories.Sysadmin()
         extra_environ = {'REMOTE_USER': str(sysadmin["name"])}
 
-        response = self.app.get("/broken_links_by_email",
+        response = self.app.get("/ckan-admin/broken_links",
                                 extra_environ=extra_environ)
 
         assert "This site has no broken links" in response
