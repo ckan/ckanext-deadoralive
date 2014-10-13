@@ -72,7 +72,7 @@ def main():
     for org_num in range(0, random_number_of_organizations()):
         org_name = "test_organisation_{0}".format(org_num)
         org_title = "Test Örgänißation {0}".format(org_num)
-        logger.info("Creating test organization {0}.".format(org_name))
+        logger.info("Creating test organization {0}.", org_name)
         try:
             ckan.action.organization_create(name=org_name, title=org_title)
         except ckanapi.ValidationError as err:
@@ -86,7 +86,7 @@ def main():
         for dataset_num in range(0, random_number_of_datasets()):
             dataset_name = "org_{0}_dataset_{1}".format(org_num, dataset_num)
             dataset_title = "Org {0} dätaßët {1}".format(org_num, dataset_num)
-            logger.info("Creating test dataset {0}.".format(dataset_name))
+            logger.info("Creating test dataset {0}.", dataset_name)
             try:
                 author = random_author()
                 maintainer = random_maintainer()
@@ -111,7 +111,8 @@ def main():
                         package_id=dataset_name,
                         url="broken_link",
                     )
-                    logger.info("Created test resource {0} with broken link.".format(resource["id"]))
+                    logger.info("Created test resource {0} with broken link.",
+                                resource["id"])
                 else:
                     # Create a CKAN resource and upload a file to it.  Note that
                     # we still have to pass ``url`` to package create even
@@ -123,7 +124,8 @@ def main():
                         url=None,
                         upload=open("test_data_file.txt"),
                     )
-                    logger.info("Created test resource {0} by uploading file.".format(resource["id"]))
+                    logger.info("Created test resource {0} by uploading file.",
+                                resource["id"])
 
 
 if __name__ == "__main__":
