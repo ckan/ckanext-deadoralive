@@ -78,6 +78,9 @@ def _is_broken(result):
     # a period of at least m hours.
     if result["num_fails"] >= n:
         last_successful = result["last_successful"]
+        if last_successful:
+            last_successful = datetime.datetime.strptime(
+                last_successful, "%Y-%m-%dT%H:%M:%S.%f")
         if last_successful is None or last_successful < m_hours_ago:
             broken = True
 
