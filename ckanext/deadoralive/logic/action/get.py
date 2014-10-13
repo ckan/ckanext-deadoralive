@@ -313,26 +313,26 @@ def broken_links_by_email(context, data_dict):
             continue
 
         if len(item["datasets_with_broken_links"]) == 1:
-            subject = "You have a dataset with broken links on {site}"
+            subject = u"You have a dataset with broken links on {site}"
             subject = subject.format(site=pylons.config["ckan.site_title"])
-            body = "This dataset contains a broken link:%0A%0A{title}%0A{url}"
+            body = u"This dataset contains a broken link:%0A%0A{title}%0A{url}"
             broken_dataset = item["datasets_with_broken_links"][0]
             url = pylons.config["ckan.site_url"] + toolkit.url_for(
                 controller="package", action="read", id=broken_dataset["name"])
             body = body.format(title=broken_dataset["title"], url=url)
 
         else:
-            subject = "You have {n} datasets with broken links on {site}"
+            subject = u"You have {n} datasets with broken links on {site}"
             subject = subject.format(n=len(item["datasets_with_broken_links"]),
                                      site=pylons.config["ckan.site_title"])
-            body = "These datasets have broken links:"
+            body = u"These datasets have broken links:"
             for dataset in item["datasets_with_broken_links"]:
                 url = pylons.config["ckan.site_url"] + toolkit.url_for(
                     controller="package", action="read", id=dataset["name"])
-                body += "%0A%0A{title}%0A{url}".format(
+                body += u"%0A%0A{title}%0A{url}".format(
                     title=dataset["title"], url=url)
 
-        item["mailto"] = "mailto:{email}?subject={subject}&body={body}".format(
+        item["mailto"] = u"mailto:{email}?subject={subject}&body={body}".format(
             email=item["email"], subject=subject, body=body)
 
     return report

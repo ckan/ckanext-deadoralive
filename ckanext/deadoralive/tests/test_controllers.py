@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Frontend tests for controllers.py."""
 import ckan.new_tests.factories as factories
 import ckanext.deadoralive.tests.helpers as custom_helpers
@@ -49,6 +50,21 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
     def test_broken_links_by_organization_when_no_broken_links(self):
         response = self.app.get("/organization/broken_links")
         assert "This site has no broken links" in response
+
+    def test_broken_links_by_organization_with_unicode(self):
+        user = factories.User()
+        config.authorized_users = [user["name"]]
+
+        org = factories.Organization(title=u"Test Örganißation")
+        dataset = custom_factories.Dataset(owner_org=org["id"],
+                                           title=u"Test Dätaßet")
+        resource = custom_factories.Resource(package_id=dataset["id"],
+                                             name=u"Test Rëßource",
+                                             url=u"http://bröken_link")
+
+        custom_helpers.make_broken((resource,), user=user)
+
+        self.app.get("/organization/broken_links")
 
     def test_broken_links_by_email(self):
         sysadmin = custom_factories.Sysadmin()
@@ -109,3 +125,26 @@ class TestBrokenLinksController(custom_helpers.FunctionalTestBaseClass):
                                 extra_environ=extra_environ)
 
         assert "This site has no broken links" in response
+
+    def test_broken_links_by_email_with_unicode(self):
+        sysadmin = custom_factories.Sysadmin()
+        extra_environ = {'REMOTE_USER': str(sysadmin["name"])}
+        maintainer = u"Mäintainer"
+        maintainer_email = u"mäintainer@maintainers.com"
+        author = u"Aüthör"
+        author_email = u"aüthör@authors.com"
+        dataset_1 = custom_factories.Dataset(
+            title=u"Test Dätaßet", maintainer=maintainer,
+            maintainer_email=maintainer_email)
+        dataset_2 = custom_factories.Dataset(
+            title=u"Test Dätaßet", author=author, author_email=author_email)
+        resource_1 = custom_factories.Resource(package_id=dataset_1["id"],
+                                               name=u"Test Rësourße",
+                                               url=u"http://bröken_link")
+        resource_2 = custom_factories.Resource(package_id=dataset_2["id"],
+                                               name=u"Test Rësourße",
+                                               url=u"http://bröken_link")
+
+        custom_helpers.make_broken((resource_1, resource_2), user=sysadmin)
+
+        self.app.get("/ckan-admin/broken_links", extra_environ=extra_environ)

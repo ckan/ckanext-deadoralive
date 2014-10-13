@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for model/results.py."""
 import datetime
 
@@ -82,6 +83,13 @@ class TestUpsertAndGet(object):
         assert result["status"] == 500
         assert result["reason"] == "Internal Server Error"
 
+    def test_insert_result_with_unicode(self):
+        """Test upsert() and get() with non-ASCII chars in the reason string."""
+        results.upsert("test_resource_id", False, status=500,
+                       reason=u"Föobäß")
+        result = results.get("test_resource_id")
+        assert result["reason"] == u"Föobäß"
+
     def test_update_with_successful_result(self):
         """Test updating a resource's row with a new successful result."""
         results.upsert("test_resource_id", False)
@@ -149,6 +157,15 @@ class TestUpsertAndGet(object):
         result = results.get("test_resource_id")
         assert result["status"] is None
         assert result["reason"] is None
+
+    def test_update_with_unicode(self):
+        results.upsert("test_resource_id", True, status=200, reason="OK")
+
+        results.upsert("test_resource_id", False, status=404,
+                       reason=u"Föoßär")
+
+        result = results.get("test_resource_id")
+        assert result["reason"] == u"Föoßär"
 
     def test_incrementing_num_fails(self):
         """Test that repeated bad results increment num_fails."""
