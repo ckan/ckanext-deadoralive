@@ -72,7 +72,7 @@ In the `[app:main]` section of the CKAN config file:
     # The minimum number of hours to wait for a check result for a resource
     # to come back before timing out and giving the resource out again to
     # another link checker task (optional, default: 2).
-    ckanext.deadoralive.recheck_resources_after = 2
+    ckanext.deadoralive.resend_pending_resources_after = 2
 
     # The minimum number of times that checking a resource's link must fail
     # consecutively before we mark that resource as broken in CKAN.
@@ -110,6 +110,7 @@ test resources as broken quicker. Add these settings to your config file:
 
     ckanext.deadoralive.recheck_resources_after = 0
     ckanext.deadoralive.broken_resource_min_hours = 0
+    ckanext.deadoralive.resend_pending_resources_after = 0
 
 This will let you run the link checker many times in a row and recheck all of
 the links, without waiting 24 hours to recheck a link. It'll also mark links as
