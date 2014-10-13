@@ -11,24 +11,39 @@
   {% if report %}
     <ul class="broken-links-list unstyled">
       {% for item in report %}
-        <li class="item">
-          <h3>{{ item.email }}</h3>
-          <p>{{ _("{0} broken links").format(item.num_broken_links) }}</p>
-          <ul>
-            {% for dataset in item.datasets_with_broken_links %}
-              <li>
-                <a href="{{ h.url_for(controller="package", action="read", id=dataset.name) }}">{{ dataset.title }}</a>:
-                {{ _("{0} broken links").format(dataset.num_broken_links) }}
-              </li>
-            {% endfor %}
-          </ul>
-          <p>
-            <a href="{{ item.mailto }}" class="btn">
-              <i class="icon-envelope"></i>
-              {{ _("Email maintainer") }}
-            </a>
-          </p>
-        </li>
+        {% if item.email %}
+          <li class="item">
+            <h3>{{ item.email }}</h3>
+            <p>{{ _("{0} broken links").format(item.num_broken_links) }}</p>
+            <ul>
+              {% for dataset in item.datasets_with_broken_links %}
+                <li>
+                  <a href="{{ h.url_for(controller="package", action="read", id=dataset.name) }}">{{ dataset.title }}</a>:
+                  {{ _("{0} broken links").format(dataset.num_broken_links) }}
+                </li>
+              {% endfor %}
+            </ul>
+            <p>
+              <a href="{{ item.mailto }}" class="btn">
+                <i class="icon-envelope"></i>
+                {{ _("Email maintainer") }}
+              </a>
+            </p>
+          </li>
+        {% else %}
+          <li class="item">
+            <h3>{{ _("No author or maintainer email") }}</h3>
+            <p>{{ _("{0} broken links").format(item.num_broken_links) }}</p>
+            <ul>
+              {% for dataset in item.datasets_with_broken_links %}
+                <li>
+                  <a href="{{ h.url_for(controller="package", action="read", id=dataset.name) }}">{{ dataset.title }}</a>:
+                  {{ _("{0} broken links").format(dataset.num_broken_links) }}
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endif %}
       {% endfor %}
     </ul>
   {% else %}
