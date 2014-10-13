@@ -27,23 +27,23 @@ logger.addHandler(ch)
 
 def random_author():
     return random.choice((
-        dict(name="äüthör one", email="äüthör_1@authors.com"),
-        dict(name="äüthör two", email="author_2@authors.com"),
-        dict(name="äüthör three", email="äüthör_3@authors.com"),
+        dict(name=u"äüthör one", email=u"äüthör_1@authors.com"),
+        dict(name=u"äüthör two", email=u"author_2@authors.com"),
+        dict(name=u"äüthör three", email=u"äüthör_3@authors.com"),
         dict(name=None, email=None),
-        dict(name="äüthör three", email=None),
-        dict(name=None, email="äüthör_3@authors.com"),
+        dict(name=u"äüthör three", email=None),
+        dict(name=None, email=u"äüthör_3@authors.com"),
     ))
 
 
 def random_maintainer():
     return random.choice((
-        dict(name="mäintainër one", email="mäintainër_1@authors.com"),
-        dict(name="mäintainër two", email="mäintainër_2@authors.com"),
-        dict(name="mäintainër three", email="mäintainër_3@authors.com"),
+        dict(name=u"mäintainër one", email=u"mäintainër_1@authors.com"),
+        dict(name=u"mäintainër two", email=u"mäintainër_2@authors.com"),
+        dict(name=u"mäintainër three", email=u"mäintainër_3@authors.com"),
         dict(name=None, email=None),
-        dict(name="mäintainër three", email=None),
-        dict(name=None, email="mäintainër_3@authors.com"),
+        dict(name=u"mäintainër three", email=None),
+        dict(name=None, email=u"mäintainër_3@authors.com"),
     ))
 
 
@@ -71,7 +71,7 @@ def main():
 
     for org_num in range(0, random_number_of_organizations()):
         org_name = "test_organisation_{0}".format(org_num)
-        org_title = "Test Örgänißation {0}".format(org_num)
+        org_title = u"Test Örgänißation {0}".format(org_num)
         logger.info("Creating test organization {0}.".format(org_name))
         try:
             ckan.action.organization_create(name=org_name, title=org_title)
@@ -85,7 +85,7 @@ def main():
 
         for dataset_num in range(0, random_number_of_datasets()):
             dataset_name = "org_{0}_dataset_{1}".format(org_num, dataset_num)
-            dataset_title = "Org {0} dätaßët {1}".format(org_num, dataset_num)
+            dataset_title = u"Org {0} dätaßët {1}".format(org_num, dataset_num)
             logger.info("Creating test dataset {0}.".format(dataset_name))
             try:
                 author = random_author()
@@ -107,9 +107,9 @@ def main():
             for i in range(0, random_number_of_resources()):
                 if random.random() < 0.5:
                     resource = ckan.action.resource_create(
-                        name="tëßt resource",
+                        name=u"tëßt resource",
                         package_id=dataset_name,
-                        url="broken_link",
+                        url=u"bröken_link",
                     )
                     logger.info("Created test resource {0} with broken link.".format(resource["id"]))
                 else:
@@ -118,7 +118,9 @@ def main():
                     # though it isn't used - otherwise CKAN has a validation
                     # error.
                     resource = ckan.action.resource_create(
-                        name="tëßt resource",
+                        name="tëßt resource",  # Deliberately don't use a u".."
+                                               # string literal here because it
+                                               # makes requests crash!
                         package_id=dataset_name,
                         url=None,
                         upload=open("test_data_file.txt"),
