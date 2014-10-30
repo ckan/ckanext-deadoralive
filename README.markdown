@@ -1,4 +1,10 @@
 [![Build Status](https://travis-ci.org/ckan/ckanext-deadoralive.png)](https://travis-ci.org/ckan/ckanext-deadoralive) [![Coverage Status](https://img.shields.io/coveralls/ckan/ckanext-deadoralive.svg)](https://coveralls.io/r/ckan/ckanext-deadoralive?branch=master)
+[![Latest Version](https://pypip.in/version/ckanext-deadoralive/badge.svg)](https://pypi.python.org/pypi/ckanext-deadoralive/)
+[![Downloads](https://pypip.in/download/ckanext-deadoralive/badge.svg)](https://pypi.python.org/pypi/ckanext-deadoralive/)
+[![Supported Python versions](https://pypip.in/py_versions/ckanext-deadoralive/badge.svg)](https://pypi.python.org/pypi/ckanext-deadoralive/)
+[![Development Status](https://pypip.in/status/ckanext-deadoralive/badge.svg)](https://pypi.python.org/pypi/ckanext-deadoralive/)
+[![License](https://pypip.in/license/ckanext-deadoralive/badge.svg)](https://pypi.python.org/pypi/ckanext-deadoralive/)
+
 
 ckanext-deadoralive
 ===================
